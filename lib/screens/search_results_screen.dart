@@ -117,7 +117,7 @@ class _MatchCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                RatingLabel(tutor.rating),
+                RatingLabel(rating: tutor.rating),
               ],
             ),
             const SizedBox(height: 10),

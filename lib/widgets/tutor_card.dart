@@ -52,7 +52,7 @@ class TutorCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        RatingLabel(tutor.rating),
+                        RatingLabel(rating : tutor.rating),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -61,7 +61,7 @@ class TutorCard extends StatelessWidget {
                       spacing: 6,
                       runSpacing: 4,
                       children: 
-                      [...tutor.subjects.map((s) => SubjectTag(s))]
+                      [...tutor.subjects.map((subj) => SubjectTag(label: subj))]
                     ),
                     const SizedBox(height: 10),
                     Row(

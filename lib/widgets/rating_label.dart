@@ -9,7 +9,7 @@ import '../theme/app_theme.dart';
 class RatingLabel extends StatelessWidget {
   final double rating;
 
-  const RatingLabel(this.rating, {super.key});
+  const RatingLabel({super.key, required this.rating});
 
   @override
   Widget build(BuildContext context) {

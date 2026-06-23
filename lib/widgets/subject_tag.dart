@@ -6,7 +6,7 @@ import '../theme/app_theme.dart';
 class SubjectTag extends StatelessWidget {
   final String label;
 
-  const SubjectTag(this.label, {super.key});
+  const SubjectTag({super.key, required this.label});
 
   @override
   Widget build(BuildContext context) {

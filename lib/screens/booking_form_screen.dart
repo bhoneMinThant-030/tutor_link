@@ -224,7 +224,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                         ],
                       ),
                     ),
-                    RatingLabel(tutor.rating),
+                    RatingLabel(rating: tutor.rating),
                   ],
                 ),
               ),
