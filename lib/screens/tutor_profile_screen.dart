@@ -93,7 +93,7 @@ class TutorProfileScreen extends StatelessWidget {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: tutor.subjects.map((subj) => SubjectTag(label: subj)).toList(),
+                  children: [...tutor.subjects.map((subj) => SubjectTag(label: subj))]
                 ),
                 const SizedBox(height: 16),
                 const _SectionTitle('ABOUT THE TUTOR'),

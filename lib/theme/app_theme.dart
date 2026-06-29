@@ -33,8 +33,6 @@ class AppTheme {
         backgroundColor: headerGrey,
         foregroundColor: brandRed,
         elevation: 0,
-        // Keep it flat — stop Material 3 from tinting it when the body
-        // scrolls underneath.
         scrolledUnderElevation: 0,
         surfaceTintColor: headerGrey,
         centerTitle: false,

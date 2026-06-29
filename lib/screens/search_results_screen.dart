@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/dummy_data.dart';
 import '../models/tutor.dart';
+import '../providers/tutors_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/rating_label.dart';
 import '../widgets/tutor_avatar.dart';
@@ -12,7 +13,9 @@ import 'tutor_profile_screen.dart';
 ///
 /// Part 2 uses sample data with fixed reasons; Part 3 populates this from the
 /// LLM response (top 3 tutors, each with a short reasoning line).
-class SearchResultsScreen extends StatelessWidget {
+///
+/// Extends [ConsumerWidget] so it can read [tutorsProvider] via Riverpod.
+class SearchResultsScreen extends ConsumerWidget {
   const SearchResultsScreen({super.key});
 
   // Sample reasoning lines (Part 3 receives these from the AI).
@@ -23,7 +26,9 @@ class SearchResultsScreen extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Tutor list from the Riverpod provider (dummy data in Part 2).
+    final tutors = ref.watch(tutorsProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('TutorLINK')),
       body: ListView(
@@ -55,9 +60,9 @@ class SearchResultsScreen extends StatelessWidget {
             style: TextStyle(color: Colors.grey[600]),
           ),
           const SizedBox(height: 16),
-          for (var i = 0; i < kDummyTutors.length; i++)
+          for (var i = 0; i < tutors.length; i++)
             _MatchCard(
-              tutor: kDummyTutors[i],
+              tutor: tutors[i],
               reason: _reasons[i % _reasons.length],
             ),
         ],
