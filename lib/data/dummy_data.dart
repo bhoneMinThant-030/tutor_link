@@ -17,7 +17,7 @@ final List<Tutor> kDummyTutors = [
         'Engineering Maths. I tutor juniors because I remember how confusing '
         'these modules felt in Year 1.',
     availability: 'Available most weeknights from 7pm and all day Saturday.',
-    //imageUrl:'https://media.istockphoto.com/id/1444077739/photo/college-study-and-education-student-man-portrait-with-back-to-school-backpack-and-portfolio.jpg?s=612x612&w=0&k=20&c=PAQmqKzYd3OiKhlfrT1DVMQNkGu-drX4rtJ5p6y7D8c='
+    imageUrl:'https://media.istockphoto.com/id/1444077739/photo/college-study-and-education-student-man-portrait-with-back-to-school-backpack-and-portfolio.jpg?s=612x612&w=0&k=20&c=PAQmqKzYd3OiKhlfrT1DVMQNkGu-drX4rtJ5p6y7D8c='
   ),
   const Tutor(
     id: 't2',

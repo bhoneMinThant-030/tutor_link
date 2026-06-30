@@ -93,7 +93,9 @@ class TutorProfileScreen extends StatelessWidget {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: [...tutor.subjects.map((subj) => SubjectTag(label: subj))]
+                  children: [
+                    ...tutor.subjects.map((subj) => SubjectTag(label: subj)),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 const _SectionTitle('ABOUT THE TUTOR'),
@@ -104,19 +106,24 @@ class TutorProfileScreen extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(tutor.availability),
                 const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => BookingFormScreen(tutor: tutor),
-                    ),
-                  ),
-                  child: const Text('Book session'),
-                ),
               ],
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: ElevatedButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BookingFormScreen(tutor: tutor),
+              ),
+            ),
+            child: const Text('Book session'),
+          ),
+        ),
       ),
     );
   }

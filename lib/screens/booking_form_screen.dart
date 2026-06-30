@@ -1,8 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../models/tutor.dart';
-import '../theme/app_theme.dart';
 import '../widgets/rating_label.dart';
 import '../widgets/tutor_avatar.dart';
 import 'payment_screen.dart';
@@ -10,8 +8,11 @@ import 'payment_screen.dart';
 /// Booking form.
 ///
 /// Demonstrates Form + TextFormField + DropdownButtonFormField with validation
-/// (rubric: Widgets + Form validation). In Part 2 it navigates to the payment
-/// screen; Part 3 saves the booking to Firestore.
+/// (rubric: Widgets + Form validation). Text fields capture their values with
+/// the `onSaved` + `form.save()` pattern (same as the class lab).
+///
+/// In Part 2 a valid submit gives feedback and navigates to the payment screen;
+/// Part 3 saves the booking to Firestore (inside the try/catch in [_submit]).
 class BookingFormScreen extends StatefulWidget {
   final Tutor tutor;
 
@@ -23,9 +24,12 @@ class BookingFormScreen extends StatefulWidget {
 
 class _BookingFormScreenState extends State<BookingFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _locationController = TextEditingController();
-  final _notesController = TextEditingController();
 
+  // Values captured via onSaved when form.save() runs.
+  String? _location;
+  String? _notes;
+
+  // Values set directly (dropdown / pickers are not plain text fields).
   String? _subject;
   DateTime? _date;
   TimeOfDay? _startTime;
@@ -40,13 +44,6 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
     _subject = _subjects.isNotEmpty ? _subjects.first : null;
   }
 
-  @override
-  void dispose() {
-    _locationController.dispose();
-    _notesController.dispose();
-    super.dispose();
-  }
-
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -57,80 +54,12 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
     if (picked != null) setState(() => _date = picked);
   }
 
-  /// Shows an iOS-style wheel time picker (hour · minute · AM/PM) in a bottom
-  /// sheet, themed to match the app, and stores the chosen time.
+  /// Shows the standard Material time picker and stores the chosen time.
   Future<void> _pickTime({required bool isStart}) async {
-    final now = DateTime.now();
-    final existing = isStart ? _startTime : _endTime;
-
-    // CupertinoDatePicker works with DateTime, so seed it from the existing
-    // selection (or "now" if nothing is chosen yet). Only the time matters.
-    var temp = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      existing?.hour ?? now.hour,
-      existing?.minute ?? now.minute,
-    );
-
-    final picked = await showModalBottomSheet<TimeOfDay>(
+    final picked = await showTimePicker(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (sheetContext) {
-        return SafeArea(
-          child: SizedBox(
-            height: 320,
-            child: Column(
-              children: [
-                // Header: title on the left, red "Done" on the right.
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        isStart ? 'Start time' : 'End time',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(
-                          sheetContext,
-                          TimeOfDay(hour: temp.hour, minute: temp.minute),
-                        ),
-                        child: const Text(
-                          'Done',
-                          style: TextStyle(
-                            color: AppTheme.brandRed,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Divider(height: 1),
-                // The spinner wheels.
-                Expanded(
-                  child: CupertinoDatePicker(
-                    mode: CupertinoDatePickerMode.time,
-                    initialDateTime: temp,
-                    use24hFormat: false,
-                    onDateTimeChanged: (value) => temp = value,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+      initialTime: (isStart ? _startTime : _endTime) ?? TimeOfDay.now(),
     );
-
     if (picked != null) {
       setState(() {
         if (isStart) {
@@ -143,19 +72,41 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
   }
 
   void _submit() {
-    // Validate the text/dropdown fields first.
-    if (!_formKey.currentState!.validate()) return;
+    // 1. Capture the text-field values (fires every onSaved).
+    _formKey.currentState!.save();
 
-    // Date and time use custom pickers, so check them separately.
-    if (_date == null || _startTime == null || _endTime == null) {
+    // 2. Validate every required field manually so all feedback is shown the
+    //    same way — via one SnackBar. (The date/time pickers can't use inline
+    //    Form validators, so we keep the whole form consistent this way.)
+    final missing = <String>[];
+    if (_subject == null) missing.add('subject');
+    if (_date == null) missing.add('date');
+    if (_startTime == null) missing.add('start time');
+    if (_endTime == null) missing.add('end time');
+    if (_location == null || _location!.isEmpty) missing.add('location');
+
+    if (missing.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please choose a date, start and end time.'),
-        ),
+        SnackBar(content: Text('Please provide: ${missing.join(', ')}.')),
       );
       return;
     }
 
+    debugPrint('Subject: $_subject  Date: $_date');
+    debugPrint('Start: $_startTime  End: $_endTime');
+    debugPrint('Location: $_location  Notes: $_notes');
+
+    // 3. Dismiss the keyboard and confirm success to the user.
+    FocusScope.of(context).unfocus();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Booking details confirmed — proceeding to payment.'),
+      ),
+    );
+
+    // 4. Continue to payment.
+    //    Part 3: save the booking to Firestore here first, wrapped in a
+    //    try/catch with a success / error SnackBar.
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -238,7 +189,6 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                   .map((s) => DropdownMenuItem(value: s, child: Text(s)))
                   .toList(),
               onChanged: (v) => setState(() => _subject = v),
-              validator: (v) => v == null ? 'Please choose a subject' : null,
             ),
             const SizedBox(height: 12),
 
@@ -287,24 +237,25 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
 
             const _Label('LOCATION'),
             TextFormField(
-              controller: _locationController,
+              keyboardType: TextInputType.text,
+              textCapitalization: TextCapitalization.sentences,
               decoration: const InputDecoration(
                 hintText: 'e.g. Library, lvl 1, Hub 1',
               ),
-              validator: (v) => (v == null || v.trim().isEmpty)
-                  ? 'Please enter a location'
-                  : null,
+              onSaved: (value) => _location = value?.trim(),
             ),
             const SizedBox(height: 12),
 
             const _Label('ADDITIONAL NOTES'),
             TextFormField(
-              controller: _notesController,
+              keyboardType: TextInputType.multiline,
+              textCapitalization: TextCapitalization.sentences,
               maxLines: 3,
               decoration: const InputDecoration(
                 hintText:
                     'What would you like to focus on during this session?',
               ),
+              onSaved: (value) => _notes = value?.trim(),
             ),
             const SizedBox(height: 20),
 
