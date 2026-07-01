@@ -77,4 +77,35 @@ class FirebaseService {
   Future<void> reloadUser() async {
     await FirebaseAuth.instance.currentUser?.reload();
   }
+
+  /// Starts phone-number verification: sends an SMS code (or matches a test
+  /// number). The callbacks report each stage back to the UI.
+  Future<void> verifyPhoneNumber({
+    required String phoneNumber,
+    required void Function(String verificationId) onCodeSent,
+    required void Function(FirebaseAuthException e) onFailed,
+  }) {
+    return FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: phoneNumber,
+      // Android may auto-retrieve the code and sign in without user input.
+      verificationCompleted: (credential) async {
+        await FirebaseAuth.instance.signInWithCredential(credential);
+      },
+      verificationFailed: onFailed,
+      codeSent: (verificationId, resendToken) => onCodeSent(verificationId),
+      codeAutoRetrievalTimeout: (verificationId) {},
+    );
+  }
+
+  /// Signs in with the SMS code the user entered.
+  Future<UserCredential> signInWithSmsCode(
+    String verificationId,
+    String smsCode,
+  ) {
+    final credential = PhoneAuthProvider.credential(
+      verificationId: verificationId,
+      smsCode: smsCode,
+    );
+    return FirebaseAuth.instance.signInWithCredential(credential);
+  }
 }

@@ -34,8 +34,12 @@ class ProfileScreen extends ConsumerWidget {
     final name = (user?.displayName?.isNotEmpty ?? false)
         ? user!.displayName!
         : 'Student';
-    final email = user?.email ?? '';
+    // Phone accounts have no email — show the phone number instead.
+    final email = user?.email ?? user?.phoneNumber ?? '';
     final verified = user?.emailVerified ?? false;
+    // Only email/password accounts can change a password.
+    final isPasswordUser =
+        user?.providerData.any((p) => p.providerId == 'password') ?? false;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -116,16 +120,18 @@ class ProfileScreen extends ConsumerWidget {
         const SizedBox(height: 20),
         _tile(context, Icons.person_outline, 'Edit profile'),
         const SizedBox(height: 20),
-        _tile(
-          context,
-          Icons.lock_reset,
-          'Change password',
-          onTap: () => Navigator.push(
+        if (isPasswordUser) ...[
+          _tile(
             context,
-            MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
+            Icons.lock_reset,
+            'Change password',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
+            ),
           ),
-        ),
-        const SizedBox(height: 20),
+          const SizedBox(height: 20),
+        ],
         _tile(context, Icons.notifications_outlined, 'Notification setting'),
         const SizedBox(height: 20),
         _tile(

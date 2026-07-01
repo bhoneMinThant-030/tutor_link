@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/firebase_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/auth_header.dart';
+import 'phone_login_screen.dart';
 import 'reset_password_screen.dart';
 import 'signup_screen.dart';
 
@@ -168,6 +169,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         const Expanded(child: Divider()),
                       ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    OutlinedButton.icon(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const PhoneLoginScreen(),
+                        ),
+                      ),
+                      icon: const Icon(Icons.phone_outlined),
+                      label: const Text('Sign in with phone'),
                     ),
                     const SizedBox(height: 12),
 

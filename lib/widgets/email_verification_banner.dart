@@ -60,6 +60,10 @@ class _EmailVerificationBannerState
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(userChangesProvider).asData?.value;
+
+    // Phone-only accounts have no email to verify — show nothing.
+    if (user?.email == null) return const SizedBox.shrink();
+
     final verified = user?.emailVerified ?? false;
 
     // When verified, the green check beside the email in the header says it
