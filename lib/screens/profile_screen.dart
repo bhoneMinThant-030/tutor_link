@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/firebase_provider.dart';
 import '../theme/app_theme.dart';
+import 'change_password_screen.dart';
 
 /// Profile tab: user header and account actions.
 ///
@@ -100,7 +101,15 @@ class ProfileScreen extends ConsumerWidget {
         const SizedBox(height: 20),
         _tile(context, Icons.person_outline, 'Edit profile'),
         const SizedBox(height: 20),
-        _tile(context, Icons.lock_reset, 'Change password'),
+        _tile(
+          context,
+          Icons.lock_reset,
+          'Change password',
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
+          ),
+        ),
         const SizedBox(height: 20),
         _tile(context, Icons.notifications_outlined, 'Notification setting'),
         const SizedBox(height: 20),

@@ -40,4 +40,28 @@ class FirebaseService {
   Future<void> forgotPassword(String email) {
     return FirebaseAuth.instance.sendPasswordResetEmail(email: email);
   }
+
+  /// Changes the signed-in user's password.
+  ///
+  /// Firebase requires a recent login before a password change, so we first
+  /// re-authenticate with the current password, then set the new one. Works
+  /// regardless of whether the account's email is verified.
+  Future<void> changePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || user.email == null) {
+      throw FirebaseAuthException(
+        code: 'no-current-user',
+        message: 'No signed-in user with a password.',
+      );
+    }
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword,
+    );
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(newPassword);
+  }
 }
