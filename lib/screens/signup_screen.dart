@@ -51,7 +51,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       if (!mounted) return;
       FocusScope.of(context).unfocus();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account created successfully!')),
+        const SnackBar(
+          content: Text('Account created! Check your email to verify it.'),
+        ),
       );
       // New user is now signed in — clear this screen so the auth gate's app
       // shell shows through.

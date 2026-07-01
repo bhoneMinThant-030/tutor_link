@@ -15,6 +15,8 @@ class FirebaseService {
     final credential = await FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: password);
     await credential.user?.updateDisplayName(name);
+    // Send the verification email as part of sign-up.
+    await credential.user?.sendEmailVerification();
     return credential;
   }
 
@@ -63,5 +65,16 @@ class FirebaseService {
     );
     await user.reauthenticateWithCredential(credential);
     await user.updatePassword(newPassword);
+  }
+
+  /// (Re)sends a verification email to the current user.
+  Future<void> sendEmailVerification() async {
+    await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+  }
+
+  /// Reloads the current user so `emailVerified` reflects the latest state
+  /// (needed after the user clicks the link in the verification email).
+  Future<void> reloadUser() async {
+    await FirebaseAuth.instance.currentUser?.reload();
   }
 }

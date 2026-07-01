@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/firebase_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/email_verification_banner.dart';
 import 'change_password_screen.dart';
 
 /// Profile tab: user header and account actions.
@@ -27,11 +28,14 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authStateProvider).asData?.value;
+    // userChanges() (not authStateChanges) so the verified check refreshes
+    // after the user reloads following email verification.
+    final user = ref.watch(userChangesProvider).asData?.value;
     final name = (user?.displayName?.isNotEmpty ?? false)
         ? user!.displayName!
         : 'Student';
     final email = user?.email ?? '';
+    final verified = user?.emailVerified ?? false;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -71,7 +75,16 @@ class ProfileScreen extends ConsumerWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text(email, style: TextStyle(color: Colors.grey[600])),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(email, style: TextStyle(color: Colors.grey[600])),
+                  if (verified) ...[
+                    const SizedBox(width: 4),
+                    const Icon(Icons.verified, size: 16, color: Colors.green),
+                  ],
+                ],
+              ),
               const SizedBox(height: 6),
               // Course + year of study. Hardcoded placeholders in Part 2; in
               // Part 3 these are captured at sign-up and feed the tutor
@@ -98,6 +111,8 @@ class ProfileScreen extends ConsumerWidget {
             ],
           ),
         ),
+        const SizedBox(height: 16),
+        const EmailVerificationBanner(),
         const SizedBox(height: 20),
         _tile(context, Icons.person_outline, 'Edit profile'),
         const SizedBox(height: 20),
