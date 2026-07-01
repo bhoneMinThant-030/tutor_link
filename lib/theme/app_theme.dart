@@ -61,6 +61,9 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: fieldFill,
+        // Light-grey placeholder so hint text is clearly lighter than the
+        // dark text the user actually types.
+        hintStyle: const TextStyle(color: Color(0xFFB0B0B0)),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,

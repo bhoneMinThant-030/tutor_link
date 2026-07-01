@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/tutor.dart';
+import '../providers/firebase_provider.dart';
 import '../providers/tutors_provider.dart';
 import '../widgets/tutor_card.dart';
 import 'booking_form_screen.dart';
@@ -272,12 +273,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final tutors = ref.watch(tutorsProvider);
     final filtered = tutors.where(_matches).toList();
 
+    // Greet the signed-in user by their first name (from Firebase).
+    final user = ref.watch(authStateProvider).asData?.value;
+    final greetingName = user?.displayName?.split(' ').first ?? 'there';
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text(
-          'Hello, Bhone.',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        Text(
+          'Hello, $greetingName.',
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text(

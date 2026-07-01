@@ -1,17 +1,37 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../providers/firebase_provider.dart';
 import '../theme/app_theme.dart';
 
 /// Profile tab: user header and account actions.
 ///
-/// The actions are UI-only in Part 2. The authentication phase wires
-/// "Change password" and "Log out" to Firebase, and "Notification setting"
-/// links to the additional feature in Part 3.
-class ProfileScreen extends StatelessWidget {
+/// Shows the signed-in user's name/email (from Firebase). "Log out" is wired to
+/// Firebase sign-out; the other tiles are UI-only in Part 2 (Change password /
+/// Notification setting arrive in later phases).
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
+  Future<void> _logout(BuildContext context, WidgetRef ref) async {
+    // Capture before the await so we don't use context across an async gap.
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref.read(firebaseServiceProvider).logOut();
+      // The auth gate rebuilds to the login screen automatically.
+    } on FirebaseAuthException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message ?? e.code)));
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authStateProvider).asData?.value;
+    final name = (user?.displayName?.isNotEmpty ?? false)
+        ? user!.displayName!
+        : 'Student';
+    final email = user?.email ?? '';
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -43,14 +63,14 @@ class ProfileScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 10),
-              const Text(
-                'Bhone',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
               Text(
-                'bmt7505@gmail.com',
-                style: TextStyle(color: Colors.grey[600]),
+                name,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+              Text(email, style: TextStyle(color: Colors.grey[600])),
               const SizedBox(height: 6),
               // Course + year of study. Hardcoded placeholders in Part 2; in
               // Part 3 these are captured at sign-up and feed the tutor
@@ -64,9 +84,9 @@ class ProfileScreen extends StatelessWidget {
                     color: AppTheme.brandRed,
                   ),
                   const SizedBox(width: 4),
-                  Text(
+                  const Text(
                     'Computer Engineering · Year 1',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.brandRed,
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
@@ -84,18 +104,25 @@ class ProfileScreen extends StatelessWidget {
         const SizedBox(height: 20),
         _tile(context, Icons.notifications_outlined, 'Notification setting'),
         const SizedBox(height: 20),
-        _tile(context, Icons.logout, 'Log out', isLogout: true),
+        _tile(
+          context,
+          Icons.logout,
+          'Log out',
+          isLogout: true,
+          onTap: () => _logout(context, ref),
+        ),
       ],
     );
   }
 
-  /// A single settings row. [isLogout] styles it red and is wired to Firebase
-  /// sign-out during the authentication phase.
+  /// A single settings row. [isLogout] styles it red. If [onTap] is given it
+  /// runs that action; otherwise it shows a "coming soon" message.
   Widget _tile(
     BuildContext context,
     IconData icon,
     String label, {
     bool isLogout = false,
+    VoidCallback? onTap,
   }) {
     final color = isLogout ? AppTheme.brandRed : Colors.black87;
     return Card(
@@ -109,11 +136,13 @@ class ProfileScreen extends StatelessWidget {
           isLogout ? Icons.arrow_forward : Icons.chevron_right,
           color: color,
         ),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$label (coming soon)')),
-          );
-        },
+        onTap:
+            onTap ??
+            () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('$label (coming soon)')),
+              );
+            },
       ),
     );
   }

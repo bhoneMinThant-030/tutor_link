@@ -1,30 +1,48 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'firebase_options.dart';
+import 'providers/firebase_provider.dart';
+import 'screens/login_screen.dart';
 import 'theme/app_theme.dart';
 import 'widgets/main_scaffold.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Firebase must be initialised before any Firebase call (auth, Firestore).
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   // ProviderScope is the root container that holds every Riverpod provider.
-  // Any widget below it can read providers via `ref.watch` / `ref.read`.
   runApp(const ProviderScope(child: TutorLinkApp()));
 }
 
 /// Root widget of the TutorLINK application.
 ///
-/// For now it shows the [MainScaffold] (the logged-in shell) directly so we can
-/// build the UI first. In the authentication phase this `home:` will be replaced
-/// by an auth gate that shows the login screen when no user is signed in.
-class TutorLinkApp extends StatelessWidget {
+/// Acts as the auth gate: it watches [authStateProvider] and shows the app
+/// shell when a user is signed in, or the login screen when not. Because this
+/// listens to Firebase, login and logout switch screens automatically without
+/// any manual navigation.
+class TutorLinkApp extends ConsumerWidget {
   const TutorLinkApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+
     return MaterialApp(
       title: 'TutorLINK',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: const MainScaffold(),
+      home: authState.when(
+        data: (user) =>
+            user != null ? const MainScaffold() : const LoginScreen(),
+        loading: () =>
+            const Scaffold(body: Center(child: CircularProgressIndicator())),
+        error: (err, stack) =>
+            const Scaffold(body: Center(child: Text('Something went wrong'))),
+      ),
     );
   }
 }
