@@ -34,9 +34,10 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-
-  # State management — required by the MBAP spec.
-  flutter_riverpod: ^2.5.1
+  # Date/time formatting (e.g. booking dates on the My Bookings screen).
+  intl: ^0.20.2
+  firebase_core: ^4.6.0 
+  flutter_riverpod: ^3.3.1
 
 dev_dependencies:
   flutter_test:

@@ -25,9 +25,9 @@ class TutorProfileScreen extends StatelessWidget {
                 height: 240,
                 width: double.infinity,
                 color: const Color(0xFFE0E0E0),
-                child: tutor.imageUrl == null
+                child: tutor.photoUrl == null
                     ? const Icon(Icons.person, size: 96, color: Colors.white)
-                    : Image.network(tutor.imageUrl!, fit: BoxFit.cover),
+                    : Image.network(tutor.photoUrl!, fit: BoxFit.cover),
               ),
               Positioned(
                 left: 16,
@@ -100,11 +100,23 @@ class TutorProfileScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 const _SectionTitle('ABOUT THE TUTOR'),
                 const SizedBox(height: 6),
-                Text(tutor.about),
+                Text(tutor.bio),
                 const SizedBox(height: 16),
                 const _SectionTitle('AVAILABILITY'),
                 const SizedBox(height: 6),
-                Text(tutor.availability),
+                // Availability is now structured days -> show them as chips.
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: tutor.availableDays
+                      .map(
+                        (d) => Chip(
+                          label: Text(d),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      )
+                      .toList(),
+                ),
                 const SizedBox(height: 24),
               ],
             ),

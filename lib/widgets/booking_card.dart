@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../models/booking.dart';
 
@@ -49,7 +50,7 @@ class BookingCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        booking.course,
+                        booking.subject,
                         style: TextStyle(color: Colors.grey[600], fontSize: 12),
                       ),
                     ],
@@ -61,7 +62,9 @@ class BookingCard extends StatelessWidget {
             const SizedBox(height: 10),
             _IconLine(
               icon: Icons.calendar_today,
-              text: '${booking.dateLabel} • ${booking.timeLabel}',
+              text:
+                  '${DateFormat('MMM d, yyyy').format(booking.sessionDate)} • '
+                  '${booking.timeFrom.format(context)} - ${booking.timeTo.format(context)}',
             ),
             const SizedBox(height: 4),
             _IconLine(icon: Icons.location_on, text: booking.location),

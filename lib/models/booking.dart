@@ -16,30 +16,46 @@ enum BookingStatus {
   };
 }
 
-/// A booking shown on the My Bookings screen.
+/// A booking shown on the My Bookings screen — the app's ONE CRUD entity.
 ///
-/// Dummy data for Part 2 (dates are pre-formatted strings to keep things
-/// simple). Part 3 stores these in Firestore with real Timestamp fields.
+/// For Part 2 these come from in-memory dummy data (see data/dummy_data.dart).
+/// The field names match the planned Firestore `bookings` document, so Part 3
+/// swaps to real Firestore reads/writes without changing the UI.
 class Booking {
-  final String id;
-  final String tutorName;
-  final String course;
+  final String bookingId;
+  final String studentId; // FK to the signed-in user (placeholder in Part 2)
+  final String tutorId; // FK to the tutor
+  final String tutorName; // denormalised copy of the tutor's name for display
   final String subject;
-  final String dateLabel; // e.g. "Jun 22, 2026"
-  final String timeLabel; // e.g. "2:00PM-4:00PM"
+  final DateTime sessionDate; // date of the session (real date, not a label)
+  final TimeOfDay timeFrom;
+  final TimeOfDay timeTo;
   final String location;
+  final double amount; // SGD total for the session
   final BookingStatus status;
-  final bool isUpcoming;
+  final String? notes;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   const Booking({
-    required this.id,
+    required this.bookingId,
+    required this.studentId,
+    required this.tutorId,
     required this.tutorName,
-    required this.course,
     required this.subject,
-    required this.dateLabel,
-    required this.timeLabel,
+    required this.sessionDate,
+    required this.timeFrom,
+    required this.timeTo,
     required this.location,
+    required this.amount,
     required this.status,
-    required this.isUpcoming,
+    this.notes,
+    required this.createdAt,
+    required this.updatedAt,
   });
+
+  /// A session is "upcoming" if its date is in the future. Computed from
+  /// [sessionDate] rather than stored, so it is always correct — this drives
+  /// the Upcoming / Past tabs on the bookings screen.
+  bool get isUpcoming => sessionDate.isAfter(DateTime.now());
 }

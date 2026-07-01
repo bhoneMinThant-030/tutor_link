@@ -19,9 +19,9 @@ class TutorAvatar extends StatelessWidget {
         width: size,
         height: size,
         color: const Color(0xFFE0E0E0),
-        child: tutor.imageUrl == null
+        child: tutor.photoUrl == null
             ? const Icon(Icons.person, color: Colors.white, size: 32)
-            : Image.network(tutor.imageUrl!, fit: BoxFit.cover),
+            : Image.network(tutor.photoUrl!, fit: BoxFit.cover),
       ),
     );
   }

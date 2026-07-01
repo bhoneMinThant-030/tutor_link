@@ -51,6 +51,29 @@ class ProfileScreen extends StatelessWidget {
                 'bmt7505@gmail.com',
                 style: TextStyle(color: Colors.grey[600]),
               ),
+              const SizedBox(height: 6),
+              // Course + year of study. Hardcoded placeholders in Part 2; in
+              // Part 3 these are captured at sign-up and feed the tutor
+              // recommendation engine on the home page.
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.school_outlined,
+                    size: 16,
+                    color: AppTheme.brandRed,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Computer Engineering · Year 1',
+                    style: const TextStyle(
+                      color: AppTheme.brandRed,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
