@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/tutor.dart';
 
-/// Square rounded avatar for a tutor. Shows the tutor's photo when an [imageUrl]
+/// Square rounded avatar for a tutor. Shows the tutor's photo when a photoUrl
 /// is available, otherwise a neutral placeholder.
 /// (Real photos/URLs are added in Part 3.)
 class TutorAvatar extends StatelessWidget {

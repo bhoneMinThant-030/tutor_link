@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/firebase_provider.dart';
 import '../theme/app_theme.dart';
+import '../utils/auth_error_message.dart';
 import '../widgets/auth_header.dart';
+import '../widgets/field_label.dart';
 
 /// Email/password registration. Pushed from the login screen. On success
 /// Firebase signs the new user in, so the auth gate shows the app — we pop back
@@ -37,9 +39,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     debugPrint('Course: $_course, Year: $_year');
 
     if (_password != _confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match.')),
-      );
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Passwords do not match.')),
+        );
       return;
     }
 
@@ -50,19 +54,21 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           .register(_email!, _password!, _name!);
       if (!mounted) return;
       FocusScope.of(context).unfocus();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Account created! Check your email to verify it.'),
-        ),
-      );
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Account created! Check your email to verify it.'),
+          ),
+        );
       // New user is now signed in — clear this screen so the auth gate's app
       // shell shows through.
       Navigator.of(context).popUntil((route) => route.isFirst);
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.message ?? e.code)));
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(friendlyAuthMessage(e))));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -100,7 +106,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    const AuthLabel('NAME'),
+                    const FieldLabel('NAME'),
                     TextFormField(
                       textCapitalization: TextCapitalization.words,
                       decoration: const InputDecoration(hintText: 'Bhone'),
@@ -111,20 +117,25 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     ),
                     const SizedBox(height: 8),
 
-                    const AuthLabel('EMAIL ADDRESS'),
+                    const FieldLabel('EMAIL ADDRESS'),
                     TextFormField(
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                         hintText: 'bmt555@gmail.com',
                       ),
                       onSaved: (v) => _email = v?.trim(),
-                      validator: (v) => (v == null || !v.contains('@'))
-                          ? 'Please enter a valid email'
-                          : null,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Please provide an email address.';
+                        } else if (!v.contains('@')) {
+                          return 'Please provide a valid email address.';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 8),
 
-                    const AuthLabel('COURSE'),
+                    const FieldLabel('COURSE'),
                     TextFormField(
                       textCapitalization: TextCapitalization.words,
                       decoration: const InputDecoration(
@@ -137,7 +148,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     ),
                     const SizedBox(height: 8),
 
-                    const AuthLabel('YEAR OF STUDY'),
+                    const FieldLabel('YEAR OF STUDY'),
                     DropdownButtonFormField<int>(
                       initialValue: _year,
                       isExpanded: true,
@@ -153,7 +164,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     ),
                     const SizedBox(height: 8),
 
-                    const AuthLabel('PASSWORD'),
+                    const FieldLabel('PASSWORD'),
                     TextFormField(
                       obscureText: _obscure,
                       decoration: InputDecoration(
@@ -169,13 +180,18 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         ),
                       ),
                       onSaved: (v) => _password = v,
-                      validator: (v) => (v == null || v.length < 6)
-                          ? 'Password must be at least 6 characters'
-                          : null,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) {
+                          return 'Please provide a password.';
+                        } else if (v.length < 6) {
+                          return 'Password must be at least 6 characters.';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 8),
 
-                    const AuthLabel('CONFIRM PASSWORD'),
+                    const FieldLabel('CONFIRM PASSWORD'),
                     TextFormField(
                       obscureText: _obscureConfirm,
                       decoration: InputDecoration(

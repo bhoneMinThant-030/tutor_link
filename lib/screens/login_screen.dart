@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/firebase_provider.dart';
 import '../theme/app_theme.dart';
+import '../utils/auth_error_message.dart';
 import '../widgets/auth_header.dart';
+import '../widgets/field_label.dart';
 import 'phone_login_screen.dart';
 import 'reset_password_screen.dart';
 import 'signup_screen.dart';
@@ -24,6 +26,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   String? _password;
   bool _obscure = true;
   bool _loading = false;
+  bool _googleLoading = false;
 
   Future<void> _login() async {
     if (!_form.currentState!.validate()) return;
@@ -36,16 +39,49 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // so we only give feedback here.
       if (!mounted) return;
       FocusScope.of(context).unfocus();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Logged in successfully!')),
-      );
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Logged in successfully!')),
+        );
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.message ?? e.code)));
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(friendlyAuthMessage(e))));
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _googleLogin() async {
+    setState(() => _googleLoading = true);
+    try {
+      final result = await ref.read(firebaseServiceProvider).signInWithGoogle();
+      // null = user closed the account picker; only confirm a real sign-in.
+      // On success the auth gate switches to the app automatically.
+      if (!mounted || result == null) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Logged in successfully!')),
+        );
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(friendlyAuthMessage(e))));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Google sign-in failed. Please try again.'),
+          ),
+        );
+    } finally {
+      if (mounted) setState(() => _googleLoading = false);
     }
   }
 
@@ -81,23 +117,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    const AuthLabel('EMAIL ADDRESS'),
+                    const FieldLabel('EMAIL ADDRESS'),
                     TextFormField(
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                         hintText: 'bmt555@gmail.com',
                       ),
                       onSaved: (v) => _email = v?.trim(),
-                      validator: (v) => (v == null || !v.contains('@'))
-                          ? 'Please enter a valid email'
-                          : null,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Please provide an email address.';
+                        } else if (!v.contains('@')) {
+                          return 'Please provide a valid email address.';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 8),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const AuthLabel('PASSWORD'),
+                        const FieldLabel('PASSWORD'),
                         GestureDetector(
                           onTap: () => Navigator.push(
                             context,
@@ -131,9 +172,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                       onSaved: (v) => _password = v,
-                      validator: (v) => (v == null || v.isEmpty)
-                          ? 'Please enter your password'
-                          : null,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) {
+                          return 'Please provide a password.';
+                        } else if (v.length < 6) {
+                          return 'Password must be at least 6 characters.';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 20),
 
@@ -152,8 +198,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // "OR CONTINUE WITH" divider — the Google button will slot
-                    // in here when we add Google Sign-in.
+                    // Divider between email/password login and the other
+                    // sign-in methods below (Google, phone).
                     Row(
                       children: [
                         const Expanded(child: Divider()),
@@ -171,6 +217,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
+
+                    OutlinedButton.icon(
+                      onPressed: _googleLoading ? null : _googleLogin,
+                      icon: _googleLoading
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.g_mobiledata, size: 28),
+                      label: const Text('Continue with Google'),
+                    ),
+                    const SizedBox(height: 10),
 
                     OutlinedButton.icon(
                       onPressed: () => Navigator.push(

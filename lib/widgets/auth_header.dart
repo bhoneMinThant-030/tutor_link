@@ -35,26 +35,3 @@ class AuthHeader extends StatelessWidget {
     );
   }
 }
-
-/// Small grey uppercase field label used above each auth text field.
-class AuthLabel extends StatelessWidget {
-  final String text;
-
-  const AuthLabel(this.text, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4, bottom: 6),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: Colors.grey[700],
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
-  }
-}

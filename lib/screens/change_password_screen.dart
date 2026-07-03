@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/firebase_provider.dart';
-import '../widgets/auth_header.dart'; // reuses AuthLabel for consistent labels
+import '../utils/auth_error_message.dart';
+import '../widgets/field_label.dart';
 
 /// In-app screen (pushed from the Profile "Change password" tile) that lets a
 /// signed-in user change their password. Re-authenticates with the current
@@ -31,9 +32,11 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     _form.currentState!.save();
 
     if (_newPassword != _confirm) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('New passwords do not match.')),
-      );
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('New passwords do not match.')),
+        );
       return;
     }
 
@@ -44,21 +47,24 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
           .changePassword(_current!, _newPassword!);
       if (!mounted) return;
       FocusScope.of(context).unfocus();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password changed successfully!')),
-      );
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Password changed successfully!')),
+        );
       Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       // Wrong current password surfaces as 'invalid-credential' (or
-      // 'wrong-password' on older SDKs) — show a clear message for it.
+      // 'wrong-password' on older SDKs). In this screen that means the
+      // CURRENT password field, so override the generic mapping.
       final message =
           (e.code == 'invalid-credential' || e.code == 'wrong-password')
           ? 'Current password is incorrect.'
-          : (e.message ?? e.code);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+          : friendlyAuthMessage(e);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -75,7 +81,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        AuthLabel(label),
+        FieldLabel(label),
         TextFormField(
           obscureText: obscure,
           decoration: InputDecoration(
@@ -120,9 +126,14 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                   obscure: _obscureNew,
                   onToggle: () => setState(() => _obscureNew = !_obscureNew),
                   onSaved: (v) => _newPassword = v,
-                  validator: (v) => (v == null || v.length < 6)
-                      ? 'Password must be at least 6 characters'
-                      : null,
+                  validator: (v) {
+                    if (v == null || v.isEmpty) {
+                      return 'Please provide a password.';
+                    } else if (v.length < 6) {
+                      return 'Password must be at least 6 characters.';
+                    }
+                    return null;
+                  },
                 ),
                 _passwordField(
                   label: 'CONFIRM NEW PASSWORD',

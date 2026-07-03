@@ -81,8 +81,8 @@ class _BookingList extends StatelessWidget {
           .map(
             (b) => BookingCard(
               booking: b,
-              onCancel: () => _feedback(context, 'Booking cancelled (demo)'),
-              onEdit: () => _feedback(context, 'Coming soon'),
+              onCancel: () => _feedback(context, 'Cancel booking (coming soon)'),
+              onEdit: () => _feedback(context, 'Edit booking (coming soon)'),
             ),
           )
           .toList(),
@@ -90,8 +90,8 @@ class _BookingList extends StatelessWidget {
   }
 
   void _feedback(BuildContext context, String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 }

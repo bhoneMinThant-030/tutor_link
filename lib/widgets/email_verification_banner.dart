@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/firebase_provider.dart';
+import '../utils/auth_error_message.dart';
 
-/// Shows the current user's email-verification status on the Profile screen.
+/// Amber "Email not verified" banner on the Profile screen, with "Resend
+/// email" and "I've verified" (which reloads the user so the status refreshes
+/// without a full re-login).
 ///
-/// - Verified  -> a small green "Email verified" line.
-/// - Not yet   -> an amber banner with "Resend email" and "I've verified"
-///   (which reloads the user so the status refreshes without a full re-login).
+/// Renders nothing when the email is verified (the green check beside the
+/// email in the profile header shows that instead) or when the account has
+/// no email at all (phone sign-in).
 class EmailVerificationBanner extends ConsumerStatefulWidget {
   const EmailVerificationBanner({super.key});
 
@@ -26,13 +29,17 @@ class _EmailVerificationBannerState
     setState(() => _busy = true);
     try {
       await ref.read(firebaseServiceProvider).sendEmailVerification();
-      messenger.showSnackBar(
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
         const SnackBar(
           content: Text('Verification email sent — check your inbox (and spam).'),
         ),
       );
     } on FirebaseAuthException catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e.message ?? e.code)));
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(friendlyAuthMessage(e))));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -46,15 +53,17 @@ class _EmailVerificationBannerState
     if (!mounted) return;
     setState(() => _busy = false); // rebuild re-reads emailVerified
     final verified = service.getCurrentUser()?.emailVerified ?? false;
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          verified
-              ? 'Email verified — thank you!'
-              : 'Not verified yet. Please open the link in your email.',
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            verified
+                ? 'Email verified — thank you!'
+                : 'Not verified yet. Please open the link in your email.',
+          ),
         ),
-      ),
-    );
+      );
   }
 
   @override

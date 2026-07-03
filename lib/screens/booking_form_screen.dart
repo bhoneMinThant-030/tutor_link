@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/tutor.dart';
+import '../widgets/field_label.dart';
 import '../widgets/rating_label.dart';
 import '../widgets/tutor_avatar.dart';
 import 'payment_screen.dart';
@@ -72,39 +73,45 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
   }
 
   void _submit() {
-    // 1. Capture the text-field values (fires every onSaved).
-    _formKey.currentState!.save();
+    // 1. Run the inline validators (subject dropdown + location field),
+    //    exactly like the class lab's expense form.
+    final isValid = _formKey.currentState!.validate();
 
-    // 2. Validate every required field manually so all feedback is shown the
-    //    same way — via one SnackBar. (The date/time pickers can't use inline
-    //    Form validators, so we keep the whole form consistent this way.)
+    // 2. The date/time pickers are not FormFields, so they are checked
+    //    separately with SnackBar feedback — the same way the lab handles
+    //    its date picker outside the Form.
     final missing = <String>[];
-    if (_subject == null) missing.add('subject');
     if (_date == null) missing.add('date');
     if (_startTime == null) missing.add('start time');
     if (_endTime == null) missing.add('end time');
-    if (_location == null || _location!.isEmpty) missing.add('location');
 
     if (missing.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please provide: ${missing.join(', ')}.')),
-      );
-      return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('Please provide: ${missing.join(', ')}.')),
+        );
     }
+    if (!isValid || missing.isNotEmpty) return;
+
+    // 3. Capture the text-field values (fires every onSaved).
+    _formKey.currentState!.save();
 
     debugPrint('Subject: $_subject  Date: $_date');
     debugPrint('Start: $_startTime  End: $_endTime');
     debugPrint('Location: $_location  Notes: $_notes');
 
-    // 3. Dismiss the keyboard and confirm success to the user.
+    // 4. Dismiss the keyboard and confirm success to the user.
     FocusScope.of(context).unfocus();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Booking details confirmed — proceeding to payment.'),
-      ),
-    );
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text('Booking details confirmed — proceeding to payment.'),
+        ),
+      );
 
-    // 4. Continue to payment.
+    // 5. Continue to payment.
     //    Part 3: save the booking to Firestore here first, wrapped in a
     //    try/catch with a success / error SnackBar.
     Navigator.push(
@@ -124,8 +131,8 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
     final tutor = widget.tutor;
     return Scaffold(
       appBar: AppBar(title: const Text('TutorLINK')),
-      // Column: the form scrolls in the Expanded area, and the price/button bar
-      // is pinned below it (outside the scroll view), so there is no empty gap.
+      // The form scrolls in the body; the price + "Book session" bar is pinned
+      // in bottomNavigationBar below, so there is no empty gap under the form.
       body: Column(
         children: [
           Expanded(
@@ -189,17 +196,19 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  const _Label('SUBJECT'),
+                  const FieldLabel('SUBJECT'),
                   DropdownButtonFormField<String>(
                     initialValue: _subject,
                     items: _subjects
                         .map((s) => DropdownMenuItem(value: s, child: Text(s)))
                         .toList(),
                     onChanged: (v) => setState(() => _subject = v),
+                    validator: (v) =>
+                        v == null ? 'Please select a subject.' : null,
                   ),
                   const SizedBox(height: 12),
 
-                  const _Label('DATE'),
+                  const FieldLabel('DATE'),
                   _PickerField(
                     text: _date == null
                         ? 'mm/dd/yyyy'
@@ -215,7 +224,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const _Label('START TIME'),
+                            const FieldLabel('START TIME'),
                             _PickerField(
                               text: _startTime?.format(context) ?? '--:--',
                               icon: Icons.access_time,
@@ -229,7 +238,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const _Label('END TIME'),
+                            const FieldLabel('END TIME'),
                             _PickerField(
                               text: _endTime?.format(context) ?? '--:--',
                               icon: Icons.access_time,
@@ -242,18 +251,21 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  const _Label('LOCATION'),
+                  const FieldLabel('LOCATION'),
                   TextFormField(
                     keyboardType: TextInputType.text,
                     textCapitalization: TextCapitalization.sentences,
                     decoration: const InputDecoration(
                       hintText: 'e.g. Library, lvl 1, Hub 1',
                     ),
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? 'Please provide a location.'
+                        : null,
                     onSaved: (value) => _location = value?.trim(),
                   ),
                   const SizedBox(height: 12),
 
-                  const _Label('ADDITIONAL NOTES'),
+                  const FieldLabel('ADDITIONAL NOTES'),
                   TextFormField(
                     keyboardType: TextInputType.multiline,
                     textCapitalization: TextCapitalization.sentences,
@@ -269,10 +281,9 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
               ),
             ),
           ),
-
-          // Pinned price + action bar (outside the scroll view).
         ],
       ),
+      // Pinned price + action bar (kept out of the scroll view).
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -306,29 +317,6 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Small grey uppercase field label.
-class _Label extends StatelessWidget {
-  final String text;
-
-  const _Label(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: Colors.grey[700],
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
         ),
       ),
     );

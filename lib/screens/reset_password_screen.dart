@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/firebase_provider.dart';
 import '../theme/app_theme.dart';
+import '../utils/auth_error_message.dart';
 import '../widgets/auth_header.dart';
+import '../widgets/field_label.dart';
 
 /// Sends a password-reset email. Pushed from the login screen's
 /// "Forgot password?" link.
@@ -30,16 +32,18 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
       await ref.read(firebaseServiceProvider).forgotPassword(_email!);
       if (!mounted) return;
       FocusScope.of(context).unfocus();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Check your email to reset your password.'),
-        ),
-      );
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Check your email to reset your password.'),
+          ),
+        );
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.message ?? e.code)));
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(friendlyAuthMessage(e))));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -77,16 +81,21 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    const AuthLabel('EMAIL ADDRESS'),
+                    const FieldLabel('EMAIL ADDRESS'),
                     TextFormField(
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                         hintText: 'bmt555@gmail.com',
                       ),
                       onSaved: (v) => _email = v?.trim(),
-                      validator: (v) => (v == null || !v.contains('@'))
-                          ? 'Please enter a valid email'
-                          : null,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Please provide an email address.';
+                        } else if (!v.contains('@')) {
+                          return 'Please provide a valid email address.';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 20),
 

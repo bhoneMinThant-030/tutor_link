@@ -1,10 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 /// Wraps the Firebase Authentication SDK so the UI never talks to Firebase
 /// directly — screens call these methods through [firebaseServiceProvider].
 ///
-/// Part 2: basic email/password auth (register, login, logout, reset).
-/// Part 3 will add Firestore CRUD + Google Sign-in here.
+/// Covers email/password auth (register, login, logout, reset), account
+/// management (change password, email verification) and the additional
+/// sign-in methods (phone/OTP, Google). Part 3 adds Firestore CRUD here.
 class FirebaseService {
   /// Creates a new account, then stores the display name on the user.
   Future<UserCredential> register(
@@ -105,6 +107,26 @@ class FirebaseService {
     final credential = PhoneAuthProvider.credential(
       verificationId: verificationId,
       smsCode: smsCode,
+    );
+    return FirebaseAuth.instance.signInWithCredential(credential);
+  }
+
+  /// Signs in with Google. Opens the Google account picker, converts the
+  /// returned Google tokens into a Firebase credential, and signs in.
+  /// Returns null if the user dismisses the picker.
+  Future<UserCredential?> signInWithGoogle() async {
+    final googleUser = await GoogleSignIn(
+      // The Web client ID. On Android this is passed as serverClientId so
+      // Google returns an idToken whose audience Firebase accepts.
+      clientId:
+          '1082566953133-s97f7svm66adjvqdigs5pj5hi89d4lcf.apps.googleusercontent.com',
+    ).signIn();
+    if (googleUser == null) return null; // user cancelled
+
+    final googleAuth = await googleUser.authentication;
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
     );
     return FirebaseAuth.instance.signInWithCredential(credential);
   }

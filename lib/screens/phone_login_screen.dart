@@ -4,12 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/firebase_provider.dart';
 import '../theme/app_theme.dart';
+import '../utils/auth_error_message.dart';
 import '../widgets/auth_header.dart';
+import '../widgets/field_label.dart';
 
 /// Phone / OTP sign-in. Two steps in one screen:
 /// 1) enter a phone number  -> Firebase sends an SMS code;
 /// 2) enter the 6-digit code -> sign in.
-/// On success the auth gate switches to the app automatically.
+///
+/// Both steps share one Form: validate() only runs the validators of the
+/// fields currently on screen, so each step validates just its own field.
 class PhoneLoginScreen extends ConsumerStatefulWidget {
   const PhoneLoginScreen({super.key});
 
@@ -18,36 +22,29 @@ class PhoneLoginScreen extends ConsumerStatefulWidget {
 }
 
 class _PhoneLoginScreenState extends ConsumerState<PhoneLoginScreen> {
-  final _phoneController = TextEditingController();
-  final _codeController = TextEditingController();
+  final _form = GlobalKey<FormState>();
+
+  // Values captured via onSaved when form.save() runs.
+  String? _phone;
+  String? _smsCode;
 
   String? _verificationId; // set once the SMS code is sent
   bool _codeSent = false;
   bool _loading = false;
 
-  @override
-  void dispose() {
-    _phoneController.dispose();
-    _codeController.dispose();
-    super.dispose();
-  }
-
-  /// The phone number exactly as typed (spaces removed). Enter the full number
-  /// including the country code, e.g. +6591234567.
-  String get _fullNumber => _phoneController.text.trim().replaceAll(' ', '');
-
   Future<void> _sendCode() async {
-    if (_phoneController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your phone number.')),
-      );
-      return;
+    // Step 1 validates + saves the phone field. On "Resend code" (step 2) the
+    // phone field is no longer on screen, so reuse the saved _phone instead.
+    if (!_codeSent) {
+      if (!_form.currentState!.validate()) return;
+      _form.currentState!.save();
     }
+
     setState(() => _loading = true);
     await ref
         .read(firebaseServiceProvider)
         .verifyPhoneNumber(
-          phoneNumber: _fullNumber,
+          phoneNumber: _phone!,
           onCodeSent: (verificationId) {
             if (!mounted) return;
             setState(() {
@@ -55,44 +52,49 @@ class _PhoneLoginScreenState extends ConsumerState<PhoneLoginScreen> {
               _codeSent = true;
               _loading = false;
             });
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Code sent. Enter it below.')),
-            );
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                const SnackBar(content: Text('Code sent. Enter it below.')),
+              );
           },
           onFailed: (e) {
             if (!mounted) return;
             setState(() => _loading = false);
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(e.message ?? e.code)));
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(content: Text(friendlyAuthMessage(e))),
+              );
           },
         );
   }
 
   Future<void> _verifyCode() async {
-    if (_codeController.text.trim().isEmpty || _verificationId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter the 6-digit code.')),
-      );
-      return;
-    }
+    // Only the code field is on screen in step 2, so this validates just it.
+    if (!_form.currentState!.validate()) return;
+    _form.currentState!.save();
+    if (_verificationId == null) return;
+
     setState(() => _loading = true);
     try {
       await ref
           .read(firebaseServiceProvider)
-          .signInWithSmsCode(_verificationId!, _codeController.text.trim());
+          .signInWithSmsCode(_verificationId!, _smsCode!);
       // Signed in. This screen was pushed on top of the login screen, so pop
       // back to the root to reveal the app shell the auth gate now shows.
       if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Logged in successfully!')),
+        );
       Navigator.of(context).popUntil((route) => route.isFirst);
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      final message = e.code == 'invalid-verification-code'
-          ? 'Incorrect code. Please try again.'
-          : (e.message ?? e.code);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(friendlyAuthMessage(e))));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -119,55 +121,69 @@ class _PhoneLoginScreenState extends ConsumerState<PhoneLoginScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const AuthHeader(),
-                  const SizedBox(height: 16),
-                  Text(
-                    _codeSent ? 'ENTER CODE' : 'SIGN IN WITH PHONE',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  if (!_codeSent) ...[
-                    const AuthLabel('PHONE NUMBER'),
-                    TextField(
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
-                        hintText: '+6591234567',
+              child: Form(
+                key: _form,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const AuthHeader(),
+                    const SizedBox(height: 16),
+                    Text(
+                      _codeSent ? 'ENTER CODE' : 'SIGN IN WITH PHONE',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _loading ? null : _sendCode,
-                      child: _loading ? _spinner() : const Text('SEND CODE'),
-                    ),
-                  ] else ...[
-                    AuthLabel('CODE SENT TO $_fullNumber'),
-                    TextField(
-                      controller: _codeController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(hintText: '123456'),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _loading ? null : _verifyCode,
-                      child: _loading ? _spinner() : const Text('VERIFY'),
-                    ),
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: _loading ? null : _sendCode,
-                      child: const Text('Resend code'),
-                    ),
+                    const SizedBox(height: 12),
+
+                    if (!_codeSent) ...[
+                      const FieldLabel('PHONE NUMBER'),
+                      TextFormField(
+                        keyboardType: TextInputType.phone,
+                        decoration: const InputDecoration(
+                          hintText: '+6591234567',
+                        ),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Please provide your phone number.';
+                          } else if (!v.trim().startsWith('+')) {
+                            return 'Include the country code, e.g. +6591234567.';
+                          }
+                          return null;
+                        },
+                        onSaved: (v) => _phone = v?.trim().replaceAll(' ', ''),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: _loading ? null : _sendCode,
+                        child: _loading ? _spinner() : const Text('SEND CODE'),
+                      ),
+                    ] else ...[
+                      FieldLabel('CODE SENT TO $_phone'),
+                      TextFormField(
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(hintText: '123456'),
+                        validator: (v) => (v == null || v.trim().length != 6)
+                            ? 'Please enter the 6-digit code.'
+                            : null,
+                        onSaved: (v) => _smsCode = v?.trim(),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: _loading ? null : _verifyCode,
+                        child: _loading ? _spinner() : const Text('VERIFY'),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: _loading ? null : _sendCode,
+                        child: const Text('Resend code'),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),

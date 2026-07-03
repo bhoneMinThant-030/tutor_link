@@ -112,9 +112,11 @@ class PaymentScreen extends StatelessWidget {
 
           ElevatedButton(
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Payment confirmed! (demo)')),
-              );
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  const SnackBar(content: Text('Payment confirmed! (demo)')),
+                );
               // Return to the first screen (the main tabs).
               Navigator.popUntil(context, (route) => route.isFirst);
             },

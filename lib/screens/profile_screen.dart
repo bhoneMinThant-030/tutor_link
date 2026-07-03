@@ -4,14 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/firebase_provider.dart';
 import '../theme/app_theme.dart';
+import '../utils/auth_error_message.dart';
 import '../widgets/email_verification_banner.dart';
 import 'change_password_screen.dart';
 
 /// Profile tab: user header and account actions.
 ///
-/// Shows the signed-in user's name/email (from Firebase). "Log out" is wired to
-/// Firebase sign-out; the other tiles are UI-only in Part 2 (Change password /
-/// Notification setting arrive in later phases).
+/// Shows the signed-in user's header (name, email or phone number, verified
+/// check) and account actions. "Change password" and "Log out" are wired to
+/// Firebase; the remaining tiles are placeholders until Part 3.
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -20,9 +21,16 @@ class ProfileScreen extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context);
     try {
       await ref.read(firebaseServiceProvider).logOut();
-      // The auth gate rebuilds to the login screen automatically.
+      // The auth gate swaps to the login screen; confirm on the way out.
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Logged out successfully!')),
+        );
     } on FirebaseAuthException catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e.message ?? e.code)));
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(friendlyAuthMessage(e))));
     }
   }
 
@@ -169,9 +177,11 @@ class ProfileScreen extends ConsumerWidget {
         onTap:
             onTap ??
             () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('$label (coming soon)')),
-              );
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(content: Text('$label (coming soon)')),
+                );
             },
       ),
     );
