@@ -133,155 +133,146 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
       appBar: AppBar(title: const Text('TutorLINK')),
       // The form scrolls in the body; the price + "Book session" bar is pinned
       // in bottomNavigationBar below, so there is no empty gap under the form.
-      body: Column(
-        children: [
-          Expanded(
-            child: Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  const Text(
-                    'Book a Session',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Secure your time with a qualified tutor. Fill in the '
-                    'details below to proceed.',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 16),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            const Text(
+              'Book a Session',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Secure your time with a qualified tutor. Fill in the '
+              'details below to proceed.',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 16),
 
-                  // Tutor summary card.
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: const BorderSide(color: Color(0xFFEEEEEE)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Row(
+            // Tutor summary card.
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: Color(0xFFEEEEEE)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Row(
+                  children: [
+                    TutorAvatar(tutor: tutor, size: 44),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          TutorAvatar(tutor: tutor, size: 44),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  tutor.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  tutor.course,
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                Text(
-                                  '\$${tutor.hourlyRate.toStringAsFixed(0)} /hr',
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                              ],
+                          Text(
+                            tutor.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            tutor.course,
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 12,
                             ),
                           ),
-                          RatingLabel(rating: tutor.rating),
+                          Text(
+                            '\$${tutor.hourlyRate.toStringAsFixed(0)} /hr',
+                            style: const TextStyle(fontSize: 12),
+                          ),
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
+                    RatingLabel(rating: tutor.rating),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
 
-                  const FieldLabel('SUBJECT'),
-                  DropdownButtonFormField<String>(
-                    initialValue: _subject,
-                    items: _subjects
-                        .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                        .toList(),
-                    onChanged: (v) => setState(() => _subject = v),
-                    validator: (v) =>
-                        v == null ? 'Please select a subject.' : null,
-                  ),
-                  const SizedBox(height: 12),
+            const FieldLabel('SUBJECT'),
+            DropdownButtonFormField<String>(
+              initialValue: _subject,
+              items: _subjects
+                  .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                  .toList(),
+              onChanged: (v) => setState(() => _subject = v),
+              validator: (v) => v == null ? 'Please select a subject.' : null,
+            ),
+            const SizedBox(height: 12),
 
-                  const FieldLabel('DATE'),
-                  _PickerField(
-                    text: _date == null
-                        ? 'mm/dd/yyyy'
-                        : '${_date!.day}/${_date!.month}/${_date!.year}',
-                    icon: Icons.calendar_today,
-                    onTap: _pickDate,
-                  ),
-                  const SizedBox(height: 12),
+            const FieldLabel('DATE'),
+            _PickerField(
+              text: _date == null
+                  ? 'mm/dd/yyyy'
+                  : '${_date!.day}/${_date!.month}/${_date!.year}',
+              icon: Icons.calendar_today,
+              onTap: _pickDate,
+            ),
+            const SizedBox(height: 12),
 
-                  Row(
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const FieldLabel('START TIME'),
-                            _PickerField(
-                              text: _startTime?.format(context) ?? '--:--',
-                              icon: Icons.access_time,
-                              onTap: () => _pickTime(isStart: true),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const FieldLabel('END TIME'),
-                            _PickerField(
-                              text: _endTime?.format(context) ?? '--:--',
-                              icon: Icons.access_time,
-                              onTap: () => _pickTime(isStart: false),
-                            ),
-                          ],
-                        ),
+                      const FieldLabel('START TIME'),
+                      _PickerField(
+                        text: _startTime?.format(context) ?? '--:--',
+                        icon: Icons.access_time,
+                        onTap: () => _pickTime(isStart: true),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-
-                  const FieldLabel('LOCATION'),
-                  TextFormField(
-                    keyboardType: TextInputType.text,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. Library, lvl 1, Hub 1',
-                    ),
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? 'Please provide a location.'
-                        : null,
-                    onSaved: (value) => _location = value?.trim(),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const FieldLabel('END TIME'),
+                      _PickerField(
+                        text: _endTime?.format(context) ?? '--:--',
+                        icon: Icons.access_time,
+                        onTap: () => _pickTime(isStart: false),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-
-                  const FieldLabel('ADDITIONAL NOTES'),
-                  TextFormField(
-                    keyboardType: TextInputType.multiline,
-                    textCapitalization: TextCapitalization.sentences,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      hintText:
-                          'What would you like to focus on during this session?',
-                    ),
-                    onSaved: (value) => _notes = value?.trim(),
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+
+            const FieldLabel('LOCATION'),
+            TextFormField(
+              keyboardType: TextInputType.text,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: const InputDecoration(
+                hintText: 'e.g. Library, lvl 1, Hub 1',
+              ),
+              validator: (v) => (v == null || v.trim().isEmpty)
+                  ? 'Please provide a location.'
+                  : null,
+              onSaved: (value) => _location = value?.trim(),
+            ),
+            const SizedBox(height: 12),
+
+            const FieldLabel('ADDITIONAL NOTES'),
+            TextFormField(
+              keyboardType: TextInputType.multiline,
+              textCapitalization: TextCapitalization.sentences,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText:
+                    'What would you like to focus on during this session?',
+              ),
+              onSaved: (value) => _notes = value?.trim(),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
       ),
       // Pinned price + action bar (kept out of the scroll view).
       bottomNavigationBar: SafeArea(
