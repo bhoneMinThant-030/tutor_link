@@ -142,6 +142,7 @@ class _PhoneLoginScreenState extends ConsumerState<PhoneLoginScreen> {
                     if (!_codeSent) ...[
                       const FieldLabel('PHONE NUMBER'),
                       TextFormField(
+                        key: const ValueKey('phone_field'),
                         keyboardType: TextInputType.phone,
                         decoration: const InputDecoration(
                           hintText: '+6591234567',
@@ -164,6 +165,7 @@ class _PhoneLoginScreenState extends ConsumerState<PhoneLoginScreen> {
                     ] else ...[
                       FieldLabel('CODE SENT TO $_phone'),
                       TextFormField(
+                        key: const ValueKey('code_field'),
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(hintText: '123456'),
                         validator: (v) => (v == null || v.trim().length != 6)
