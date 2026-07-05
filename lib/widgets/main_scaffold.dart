@@ -9,7 +9,7 @@ import '../screens/profile_screen.dart';
 /// Holds the [BottomNavigationBar] with three tabs (Home, Bookings, Profile)
 /// and swaps the body between them using an [IndexedStack] so each tab keeps
 /// its own state. Screens opened on top of a tab (tutor profile, booking form,
-/// payment) are pushed with Navigator and have their own Scaffold — they are
+/// payment) are pushed with Navigator and have their own Scaffold. They are
 /// NOT part of this bar.
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});

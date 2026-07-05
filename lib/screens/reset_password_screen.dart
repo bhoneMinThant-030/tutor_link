@@ -53,6 +53,8 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.headerGrey,
+      // SafeArea keeps the card clear of the notch and status bar.
+      // SingleChildScrollView stops it overflowing once the keyboard opens.
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

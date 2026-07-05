@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 /// Wraps the Firebase Authentication SDK so the UI never talks to Firebase
-/// directly — screens call these methods through [firebaseServiceProvider].
+/// directly. Screens call these methods through [firebaseServiceProvider].
 ///
 /// Covers email/password auth (register, login, logout, reset), account
 /// management (change password, email verification) and the additional
@@ -95,6 +95,8 @@ class FirebaseService {
       },
       verificationFailed: onFailed,
       codeSent: (verificationId, resendToken) => onCodeSent(verificationId),
+      // Left empty on purpose. If auto retrieval times out, the user can
+      // still type the code by hand, so there's nothing extra to do here.
       codeAutoRetrievalTimeout: (verificationId) {},
     );
   }
@@ -117,7 +119,8 @@ class FirebaseService {
   Future<UserCredential?> signInWithGoogle() async {
     final googleUser = await GoogleSignIn(
       // The Web client ID. On Android this is passed as serverClientId so
-      // Google returns an idToken whose audience Firebase accepts.
+      // Google returns an idToken whose audience Firebase accepts. This is a
+      // public identifier, not a secret, so it's fine to check into source.
       clientId:
           '1082566953133-s97f7svm66adjvqdigs5pj5hi89d4lcf.apps.googleusercontent.com',
     ).signIn();

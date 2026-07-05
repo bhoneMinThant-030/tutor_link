@@ -78,7 +78,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
     final isValid = _formKey.currentState!.validate();
 
     // 2. The date/time pickers are not FormFields, so they are checked
-    //    separately with SnackBar feedback — the same way the lab handles
+    //    separately with SnackBar feedback, the same way the lab handles
     //    its date picker outside the Form.
     final missing = <String>[];
     if (_date == null) missing.add('date');
@@ -107,7 +107,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         const SnackBar(
-          content: Text('Booking details confirmed — proceeding to payment.'),
+          content: Text('Booking details confirmed, proceeding to payment.'),
         ),
       );
 
@@ -120,7 +120,9 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
         builder: (_) => PaymentScreen(
           tutorName: widget.tutor.name,
           subject: _subject ?? '',
-          amount: widget.tutor.hourlyRate * 2, // 2-hour sample session
+          // Fixed 2 hour estimate for now. Doesn't yet reflect the actual
+          // gap between the picked start and end time.
+          amount: widget.tutor.hourlyRate * 2,
         ),
       ),
     );
@@ -131,8 +133,10 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
     final tutor = widget.tutor;
     return Scaffold(
       appBar: AppBar(title: const Text('TutorLINK')),
-      // The form scrolls in the body; the price + "Book session" bar is pinned
-      // in bottomNavigationBar below, so there is no empty gap under the form.
+      // The form scrolls in the body. The price and "Book session" bar sit in
+      // bottomNavigationBar below instead, just because that slot always
+      // stays pinned to the bottom regardless of scrolling. It doesn't need
+      // to hold an actual BottomNavigationBar widget.
       body: Form(
         key: _formKey,
         child: ListView(
@@ -288,6 +292,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                     'TOTAL PRICE',
                     style: TextStyle(color: Colors.grey[600], fontSize: 11),
                   ),
+                  // Same fixed 2 hour estimate used in _submit below.
                   Text(
                     '\$${(tutor.hourlyRate * 2).toStringAsFixed(2)}',
                     style: const TextStyle(
@@ -315,6 +320,9 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
 }
 
 /// Read-only field that opens a picker (date or time) when tapped.
+///
+/// Wraps an [InputDecorator] with no real input inside it, purely to borrow
+/// the same box/border look as the real TextFormFields around it.
 class _PickerField extends StatelessWidget {
   final String text;
   final IconData icon;

@@ -26,8 +26,7 @@ class AuthHeader extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          'Elevate your academic journey with expert tutoring and '
-          'modern learning tools.',
+          'Elevate your academic journey with expert tutoring',
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.grey[600], fontSize: 13),
         ),

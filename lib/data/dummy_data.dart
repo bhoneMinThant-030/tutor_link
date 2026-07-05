@@ -44,6 +44,7 @@ final List<Tutor> kDummyTutors = [
     isActive: true,
     subjects: ['DAVA', 'DSAG'],
     availableDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    
   ),
   const Tutor(
     tutorId: 't4',
@@ -66,6 +67,7 @@ final List<Tutor> kDummyTutors = [
     isActive: true,
     subjects: ['AMDT', 'MBAP'],
     availableDays: ['Sat', 'Sun'],
+    
   ),
   const Tutor(
     tutorId: 't6',
@@ -77,6 +79,7 @@ final List<Tutor> kDummyTutors = [
     isActive: true,
     subjects: ['DBAV', 'APSEC'],
     availableDays: ['Mon', 'Wed', 'Fri'],
+    
   ),
   const Tutor(
     tutorId: 't7',
@@ -95,7 +98,9 @@ final List<Tutor> kDummyTutors = [
 final DateTime _now = DateTime.now();
 
 /// Sample bookings. Dates are relative to [_now] so the Upcoming / Past tabs
-/// always have entries no matter when the app is demonstrated.
+/// always have entries no matter when the app is demonstrated. Every entry
+/// shares the same studentId placeholder. This list isn't filtered by
+/// whoever's actually signed in until Part 3 wires it to Firestore.
 final List<Booking> kDummyBookings = [
   Booking(
     bookingId: 'b1',

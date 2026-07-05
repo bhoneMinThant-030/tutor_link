@@ -19,6 +19,8 @@ class TutorAvatar extends StatelessWidget {
         width: size,
         height: size,
         color: const Color(0xFFE0E0E0),
+        // Most dummy tutors don't have a photoUrl set, guard against
+        // Image.network(null), which would throw.
         child: tutor.photoUrl == null
             ? const Icon(Icons.person, color: Colors.white, size: 32)
             : Image.network(tutor.photoUrl!, fit: BoxFit.cover),

@@ -42,7 +42,7 @@ class ProfileScreen extends ConsumerWidget {
     final name = (user?.displayName?.isNotEmpty ?? false)
         ? user!.displayName!
         : 'Student';
-    // Phone accounts have no email — show the phone number instead.
+    // Phone accounts have no email, show the phone number instead.
     final email = user?.email ?? user?.phoneNumber ?? '';
     final verified = user?.emailVerified ?? false;
     // Only email/password accounts can change a password.

@@ -33,7 +33,7 @@ class _EmailVerificationBannerState
         ..hideCurrentSnackBar()
         ..showSnackBar(
         const SnackBar(
-          content: Text('Verification email sent — check your inbox (and spam).'),
+          content: Text('Verification email sent, check your inbox (and spam).'),
         ),
       );
     } on FirebaseAuthException catch (e) {
@@ -59,7 +59,7 @@ class _EmailVerificationBannerState
         SnackBar(
           content: Text(
             verified
-                ? 'Email verified — thank you!'
+                ? 'Email verified, thank you!'
                 : 'Not verified yet. Please open the link in your email.',
           ),
         ),
@@ -70,13 +70,13 @@ class _EmailVerificationBannerState
   Widget build(BuildContext context) {
     final user = ref.watch(userChangesProvider).asData?.value;
 
-    // Phone-only accounts have no email to verify — show nothing.
+    // Phone-only accounts have no email to verify, show nothing.
     if (user?.email == null) return const SizedBox.shrink();
 
     final verified = user?.emailVerified ?? false;
 
     // When verified, the green check beside the email in the header says it
-    // all — so this banner shows nothing.
+    // all, so this banner shows nothing.
     if (verified) return const SizedBox.shrink();
 
     return Container(

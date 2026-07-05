@@ -9,7 +9,7 @@ import '../widgets/auth_header.dart';
 import '../widgets/field_label.dart';
 
 /// Email/password registration. Pushed from the login screen. On success
-/// Firebase signs the new user in, so the auth gate shows the app — we pop back
+/// Firebase signs the new user in, so the auth gate shows the app. We pop back
 /// to the root to reveal it.
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -38,6 +38,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     // the home recommendation engine can personalise. Captured now for the UI.
     debugPrint('Course: $_course, Year: $_year');
 
+    // Checked by hand because a field validator only ever sees its own
+    // value. It has no way to compare against the password field above it.
     if (_password != _confirmPassword) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
@@ -61,7 +63,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             content: Text('Account created! Check your email to verify it.'),
           ),
         );
-      // New user is now signed in — clear this screen so the auth gate's app
+      // New user is now signed in. Clear this screen so the auth gate's app
       // shell shows through.
       Navigator.of(context).popUntil((route) => route.isFirst);
     } on FirebaseAuthException catch (e) {
@@ -78,6 +80,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.headerGrey,
+      // With six fields this is the tallest form in the app, so
+      // SingleChildScrollView matters here to avoid overflowing when the
+      // keyboard opens. SafeArea keeps clear of the notch and status bar.
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

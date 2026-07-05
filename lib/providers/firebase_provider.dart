@@ -17,8 +17,8 @@ final authStateProvider = StreamProvider<User?>((ref) {
   return FirebaseAuth.instance.authStateChanges();
 });
 
-/// Like [authStateProvider] but also emits on user *updates* — including
-/// `reload()` after email verification — so the UI can refresh `emailVerified`.
+/// Like [authStateProvider] but also emits on user *updates*, including
+/// `reload()` after email verification, so the UI can refresh `emailVerified`.
 final userChangesProvider = StreamProvider<User?>((ref) {
   return FirebaseAuth.instance.userChanges();
 });

@@ -111,6 +111,8 @@ class _PhoneLoginScreenState extends ConsumerState<PhoneLoginScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Phone Sign-In')),
       backgroundColor: AppTheme.headerGrey,
+      // SafeArea keeps the card clear of the notch and status bar.
+      // SingleChildScrollView stops it overflowing once the keyboard opens.
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -141,6 +143,9 @@ class _PhoneLoginScreenState extends ConsumerState<PhoneLoginScreen> {
 
                     if (!_codeSent) ...[
                       const FieldLabel('PHONE NUMBER'),
+                      // Distinct key so this counts as a different field from
+                      // the code field below, instead of Flutter reusing its
+                      // state (and whatever was still typed in it).
                       TextFormField(
                         key: const ValueKey('phone_field'),
                         keyboardType: TextInputType.phone,
@@ -164,6 +169,7 @@ class _PhoneLoginScreenState extends ConsumerState<PhoneLoginScreen> {
                       ),
                     ] else ...[
                       FieldLabel('CODE SENT TO $_phone'),
+                      // Same reasoning as the phone field's key above.
                       TextFormField(
                         key: const ValueKey('code_field'),
                         keyboardType: TextInputType.number,

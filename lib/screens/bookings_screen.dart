@@ -83,6 +83,7 @@ class _BookingList extends StatelessWidget {
               booking: b,
               onCancel: () => _feedback(context, 'Cancel booking (coming soon)'),
               onEdit: () => _feedback(context, 'Edit booking (coming soon)'),
+              onDelete: () => _feedback(context, 'Delete booking (coming soon)'),
             ),
           )
           .toList(),

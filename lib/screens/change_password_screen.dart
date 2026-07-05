@@ -103,6 +103,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Change Password')),
+      // SafeArea keeps this clear of the notch and status bar.
+      // SingleChildScrollView stops it overflowing once the keyboard opens.
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),

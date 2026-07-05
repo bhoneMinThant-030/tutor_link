@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 /// Central theme for TutorLINK.
 ///
 /// Uses a red & white palette to match the TP brand that students see daily
-/// across the LMS, signage and room themes — chosen in the Part 1 proposal so
+/// across the LMS, signage and room themes. Chosen in the Part 1 proposal so
 /// the app feels familiar and relevant to the target audience.
 class AppTheme {
-  // Brand colours (single source of truth — reuse these instead of hard-coding).
+  // Brand colours: single source of truth, reuse these instead of hard-coding.
   static const Color brandRed = Color(0xFFD32F2F);
   static const Color brandWhite = Colors.white;
   static const Color fieldFill = Color(0xFFF6F6F6);

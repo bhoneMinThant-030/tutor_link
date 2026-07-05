@@ -16,7 +16,7 @@ enum BookingStatus {
   };
 }
 
-/// A booking shown on the My Bookings screen — the app's ONE CRUD entity.
+/// A booking shown on the My Bookings screen (the app's ONE CRUD entity).
 ///
 /// For Part 2 these come from in-memory dummy data (see data/dummy_data.dart).
 /// The field names match the planned Firestore `bookings` document, so Part 3
@@ -55,7 +55,7 @@ class Booking {
   });
 
   /// A session is "upcoming" if its date is in the future. Computed from
-  /// [sessionDate] rather than stored, so it is always correct — this drives
+  /// [sessionDate] rather than stored, so it is always correct. This drives
   /// the Upcoming / Past tabs on the bookings screen.
   bool get isUpcoming => sessionDate.isAfter(DateTime.now());
 }

@@ -12,7 +12,7 @@ import 'tutor_profile_screen.dart';
 /// section and the full tutor list. Body-only (MainScaffold provides Scaffold).
 ///
 /// When no search text or filter is active it shows Recommended (the first 3
-/// tutors — a placeholder for the Part 3 content-based scoring) followed by all
+/// tutors a placeholder for the Part 3 content-based scoring) followed by all
 /// other tutors. When the user searches or filters, it shows a single results
 /// list instead.
 ///
@@ -28,7 +28,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _searchController = TextEditingController();
 
-  /// Slider upper bound — treated as "any price" (no price filter).
+  /// Slider upper bound, treated as "any price" (no price filter).
   static const double _priceCap = 30;
   static const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -257,7 +257,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       },
     );
 
-    // The sheet is closed — release its local controller.
+    // The sheet is closed. Release its local controller.
     subjectMenuController.dispose();
   }
 

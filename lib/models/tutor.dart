@@ -13,7 +13,7 @@ class Tutor {
   final double rating; // 0.0 - 5.0
   final bool isActive; // hidden from listings when false (used in Part 3)
   final List<String> subjects; // e.g. ['COMT', 'LOMA']
-  final List<String> availableDays; // e.g. ['Mon', 'Wed', 'Sat'] — filterable
+  final List<String> availableDays; // e.g. ['Mon', 'Wed', 'Sat'] (filterable)
   final String? photoUrl; // null -> placeholder avatar
 
   const Tutor({

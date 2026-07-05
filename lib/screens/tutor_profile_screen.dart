@@ -25,6 +25,8 @@ class TutorProfileScreen extends StatelessWidget {
                 height: 240,
                 width: double.infinity,
                 color: const Color(0xFFE0E0E0),
+                // Most dummy tutors don't have a photoUrl set, guard against
+                // Image.network(null).
                 child: tutor.photoUrl == null
                     ? const Icon(Icons.person, size: 96, color: Colors.white)
                     : Image.network(tutor.photoUrl!, fit: BoxFit.cover),

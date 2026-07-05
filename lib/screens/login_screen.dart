@@ -26,7 +26,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   String? _password;
   bool _obscure = true;
   bool _loading = false;
-  bool _googleLoading = false;
+  bool _googleLoading = false; // kept separate so the Google button spins on
+  // its own, without also disabling/spinning the email login button
 
   Future<void> _login() async {
     if (!_form.currentState!.validate()) return;
@@ -89,6 +90,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.headerGrey,
+      // SafeArea keeps the card clear of the notch and status bar.
+      // SingleChildScrollView stops it overflowing once the keyboard opens.
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

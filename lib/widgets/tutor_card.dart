@@ -27,6 +27,8 @@ class TutorCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
+      // InkWell instead of a plain GestureDetector so tapping the whole
+      // card shows a ripple, giving feedback on this large tap target.
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(14),
@@ -35,7 +37,7 @@ class TutorCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TutorAvatar(tutor: tutor, size: 64),
+              TutorAvatar(tutor: tutor, size: 80),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
