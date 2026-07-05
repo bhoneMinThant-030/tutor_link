@@ -233,8 +233,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text('Already have an account? '),
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
                           child: const Text(
                             'Log in',
                             style: TextStyle(

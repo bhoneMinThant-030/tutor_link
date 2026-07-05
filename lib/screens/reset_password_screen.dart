@@ -115,8 +115,8 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                     const SizedBox(height: 12),
 
                     Center(
-                      child: GestureDetector(
-                        onTap: () => Navigator.pop(context),
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
                         child: const Text(
                           'Back to Login',
                           style: TextStyle(

@@ -139,8 +139,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const FieldLabel('PASSWORD'),
-                        GestureDetector(
-                          onTap: () => Navigator.push(
+                        TextButton(
+                          onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => const ResetPasswordScreen(),
@@ -247,8 +247,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text("Don't have an account? "),
-                        GestureDetector(
-                          onTap: () => Navigator.push(
+                        TextButton(
+                          onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => const SignupScreen(),
