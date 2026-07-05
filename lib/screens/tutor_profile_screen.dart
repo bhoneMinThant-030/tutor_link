@@ -26,10 +26,12 @@ class TutorProfileScreen extends StatelessWidget {
                 width: double.infinity,
                 color: const Color(0xFFE0E0E0),
                 // Most dummy tutors don't have a photoUrl set, guard against
-                // Image.network(null).
+                // Image.asset(null), which would throw. Part 2 photos are
+                // bundled local assets so the demo doesn't depend on an
+                // external host being reachable.
                 child: tutor.photoUrl == null
                     ? const Icon(Icons.person, size: 96, color: Colors.white)
-                    : Image.network(tutor.photoUrl!, fit: BoxFit.cover),
+                    : Image.asset(tutor.photoUrl!, fit: BoxFit.cover),
               ),
               Positioned(
                 left: 16,

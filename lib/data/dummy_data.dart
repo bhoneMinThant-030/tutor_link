@@ -20,8 +20,7 @@ final List<Tutor> kDummyTutors = [
     isActive: true,
     subjects: ['COMT', 'LOMA'],
     availableDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-    photoUrl:
-        'https://media.istockphoto.com/id/1444077739/photo/college-study-and-education-student-man-portrait-with-back-to-school-backpack-and-portfolio.jpg?s=612x612&w=0&k=20&c=PAQmqKzYd3OiKhlfrT1DVMQNkGu-drX4rtJ5p6y7D8c=',
+    photoUrl: 'assets/images/tutors/jun_meng.jpg',
   ),
   const Tutor(
     tutorId: 't2',
@@ -33,6 +32,7 @@ final List<Tutor> kDummyTutors = [
     isActive: true,
     subjects: ['UXID', 'CYFUN'],
     availableDays: ['Mon', 'Tue', 'Wed', 'Sun'],
+    photoUrl: 'assets/images/tutors/felicia.jpg',
   ),
   const Tutor(
     tutorId: 't3',
@@ -44,7 +44,7 @@ final List<Tutor> kDummyTutors = [
     isActive: true,
     subjects: ['DAVA', 'DSAG'],
     availableDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-    
+    photoUrl: 'assets/images/tutors/jariya.jpg',
   ),
   const Tutor(
     tutorId: 't4',
@@ -56,6 +56,7 @@ final List<Tutor> kDummyTutors = [
     isActive: true,
     subjects: ['ADEV', 'NECT'],
     availableDays: ['Wed', 'Thu', 'Fri'],
+    photoUrl: 'assets/images/tutors/marcus.jpg',
   ),
   const Tutor(
     tutorId: 't5',
@@ -91,6 +92,7 @@ final List<Tutor> kDummyTutors = [
     isActive: true,
     subjects: ['CADV'],
     availableDays: ['Tue', 'Thu', 'Sat'],
+    photoUrl: 'assets/images/tutors/priya.jpg',
   ),
 ];
 
@@ -107,6 +109,7 @@ final List<Booking> kDummyBookings = [
     studentId: 'student_demo',
     tutorId: 't1',
     tutorName: 'Jun Meng',
+    tutorPhotoUrl: 'assets/images/tutors/jun_meng.jpg',
     subject: 'COMT',
     sessionDate: _now.add(const Duration(days: 3)),
     timeFrom: const TimeOfDay(hour: 14, minute: 0),
@@ -139,6 +142,7 @@ final List<Booking> kDummyBookings = [
     studentId: 'student_demo',
     tutorId: 't2',
     tutorName: 'Felicia',
+    tutorPhotoUrl: 'assets/images/tutors/felicia.jpg',
     subject: 'UXID',
     sessionDate: _now.add(const Duration(days: 1)),
     timeFrom: const TimeOfDay(hour: 16, minute: 0),
@@ -155,6 +159,7 @@ final List<Booking> kDummyBookings = [
     studentId: 'student_demo',
     tutorId: 't4',
     tutorName: 'Marcus',
+    tutorPhotoUrl: 'assets/images/tutors/marcus.jpg',
     subject: 'ADEV',
     sessionDate: _now.subtract(const Duration(days: 5)),
     timeFrom: const TimeOfDay(hour: 15, minute: 0),
@@ -171,6 +176,7 @@ final List<Booking> kDummyBookings = [
     studentId: 'student_demo',
     tutorId: 't3',
     tutorName: 'Jariya',
+    tutorPhotoUrl: 'assets/images/tutors/jariya.jpg',
     subject: 'DAVA',
     sessionDate: _now.subtract(const Duration(days: 14)),
     timeFrom: const TimeOfDay(hour: 18, minute: 0),

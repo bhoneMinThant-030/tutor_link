@@ -26,6 +26,7 @@ class Booking {
   final String studentId; // FK to the signed-in user (placeholder in Part 2)
   final String tutorId; // FK to the tutor
   final String tutorName; // denormalised copy of the tutor's name for display
+  final String? tutorPhotoUrl; // denormalised copy of the tutor's photo, if any
   final String subject;
   final DateTime sessionDate; // date of the session (real date, not a label)
   final TimeOfDay timeFrom;
@@ -42,6 +43,7 @@ class Booking {
     required this.studentId,
     required this.tutorId,
     required this.tutorName,
+    this.tutorPhotoUrl,
     required this.subject,
     required this.sessionDate,
     required this.timeFrom,

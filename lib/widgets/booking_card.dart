@@ -66,10 +66,23 @@ class BookingCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const CircleAvatar(
+                    CircleAvatar(
                       radius: 20,
-                      backgroundColor: Color(0xFFE0E0E0),
-                      child: Icon(Icons.person, color: Colors.white, size: 22),
+                      backgroundColor: const Color(0xFFE0E0E0),
+                      // Part 2 photos are bundled local assets so the demo
+                      // doesn't depend on an external host being reachable.
+                      backgroundImage: booking.tutorPhotoUrl != null
+                          ? AssetImage(booking.tutorPhotoUrl!)
+                          : null,
+                      // Most dummy tutors don't have a photo, guard against
+                      // showing the icon on top of a real photo.
+                      child: booking.tutorPhotoUrl == null
+                          ? const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: 22,
+                            )
+                          : null,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
