@@ -51,9 +51,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
     setState(() => _loading = true);
     try {
-      await ref
-          .read(firebaseServiceProvider)
-          .register(_email!, _password!, _name!);
+      final firebaseService = ref.read(firebaseServiceProvider);
+      await firebaseService.register(_email!, _password!, _name!);
       if (!mounted) return;
       FocusScope.of(context).unfocus();
       ScaffoldMessenger.of(context)
@@ -176,12 +175,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         hintText: '••••••••',
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscure
-                                ? Icons.visibility_off
-                                : Icons.visibility,
+                            _obscure ? Icons.visibility_off : Icons.visibility,
                           ),
-                          onPressed: () =>
-                              setState(() => _obscure = !_obscure),
+                          onPressed: () => setState(() => _obscure = !_obscure),
                         ),
                       ),
                       onSaved: (v) => _password = v,
