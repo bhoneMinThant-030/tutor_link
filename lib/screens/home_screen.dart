@@ -26,7 +26,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final _searchController = TextEditingController();
+  int _searchFieldGen = 0;
 
   /// Slider upper bound, treated as "any price" (no price filter).
   static const double _priceCap = 30;
@@ -46,12 +46,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _selectedDays.isNotEmpty ||
       _maxPrice < _priceCap ||
       _minRating > 0;
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
 
   /// Whether a tutor passes the current search text and every active filter.
   bool _matches(Tutor t) {
@@ -91,7 +85,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _clearFilters() {
     setState(() {
       _query = '';
-      _searchController.clear();
+      _searchFieldGen++;
       _subject = null;
       _selectedDays.clear();
       _maxPrice = _priceCap;
@@ -111,9 +105,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final Set<String> tempDays = {..._selectedDays};
     double tempMaxPrice = _maxPrice;
     double tempMinRating = _minRating;
-
-    // Controller for the searchable subject dropdown (disposed after close).
-    final subjectMenuController = TextEditingController(text: tempSubject ?? '');
 
     await showModalBottomSheet<void>(
       context: context,
@@ -150,7 +141,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(height: 6),
                   // Searchable dropdown: type to filter, scrolls to any length.
                   DropdownMenu<String?>(
-                    controller: subjectMenuController,
+                    key: ValueKey(tempSubject),
+                    initialSelection: tempSubject,
                     expandedInsets: EdgeInsets.zero, // fill the sheet width
                     enableFilter: true,
                     requestFocusOnTap: true,
@@ -159,8 +151,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     onSelected: (value) => setSheet(() => tempSubject = value),
                     dropdownMenuEntries: subjects
                         .map(
-                          (s) =>
-                              DropdownMenuEntry<String?>(value: s, label: s),
+                          (s) => DropdownMenuEntry<String?>(value: s, label: s),
                         )
                         .toList(),
                   ),
@@ -225,7 +216,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             tempDays.clear();
                             tempMaxPrice = _priceCap;
                             tempMinRating = 0;
-                            subjectMenuController.clear();
+                            
                           }),
                           child: const Text('Clear'),
                         ),
@@ -256,17 +247,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
       },
     );
-
-    // The sheet is closed. Release its local controller.
-    subjectMenuController.dispose();
   }
 
   /// Builds a TutorCard wired to the profile / booking actions.
-  Widget _card(Tutor t) => TutorCard(
-    tutor: t,
-    onTap: () => _openProfile(t),
-    onBook: () => _book(t),
-  );
+  Widget _card(Tutor t) =>
+      TutorCard(tutor: t, onTap: () => _openProfile(t), onBook: () => _book(t));
 
   @override
   Widget build(BuildContext context) {
@@ -296,7 +281,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Expanded(
               child: TextField(
-                controller: _searchController,
+                key: ValueKey(_searchFieldGen),
                 onChanged: (v) => setState(() => _query = v),
                 decoration: const InputDecoration(
                   prefixIcon: Icon(Icons.search),
