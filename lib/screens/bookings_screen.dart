@@ -16,11 +16,14 @@ class BookingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Read bookings from the Riverpod provider. When this is swapped for a
-    // Firestore stream in Part 3, the UI here rebuilds automatically.
-    final bookings = ref.watch(bookingsProvider);
-    final upcoming = bookings.where((b) => b.isUpcoming).toList();
-    final past = bookings.where((b) => !b.isUpcoming).toList();
+  final bookingsAsync = ref.watch(bookingsProvider);
+
+  return bookingsAsync.when(
+    loading: () => const Center(child: CircularProgressIndicator()),
+    error: (e, _) => Center(child: Text('Error loading bookings: $e')),
+    data: (bookings) {
+      final upcoming = bookings.where((b) => b.isUpcoming).toList();
+      final past = bookings.where((b) => !b.isUpcoming).toList();
 
     return DefaultTabController(
       length: 2,
@@ -58,9 +61,11 @@ class BookingsScreen extends ConsumerWidget {
               ],
             ),
           ),
-        ],
+               ],
       ),
-    );
+      );
+    },
+  );
   }
 }
 

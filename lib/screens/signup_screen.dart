@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../providers/firebase_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/auth_error_message.dart';
@@ -33,11 +32,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   Future<void> _register() async {
     if (!_form.currentState!.validate()) return;
     _form.currentState!.save();
-
-    // Part 3: course/year get written to the user's Firestore document here so
-    // the home recommendation engine can personalise. Captured now for the UI.
-    debugPrint('Course: $_course, Year: $_year');
-
     // Checked by hand because a field validator only ever sees its own
     // value. It has no way to compare against the password field above it.
     if (_password != _confirmPassword) {
@@ -52,7 +46,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     setState(() => _loading = true);
     try {
       final firebaseService = ref.read(firebaseServiceProvider);
-      await firebaseService.register(_email!, _password!, _name!);
+      final credential = await firebaseService.register(
+        _email!,
+        _password!,
+        _name!,
+      );
+      await firebaseService.addUserInfo(
+        credential.user!.uid,
+        _name!,
+        _course!,
+        _year!,
+      );
       if (!mounted) return;
       FocusScope.of(context).unfocus();
       ScaffoldMessenger.of(context)

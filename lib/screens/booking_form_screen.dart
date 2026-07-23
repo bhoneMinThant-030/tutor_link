@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tutor_link/models/booking.dart';
+import 'package:tutor_link/providers/firebase_provider.dart';
 
 import '../models/tutor.dart';
 import '../widgets/field_label.dart';
@@ -14,16 +17,16 @@ import 'payment_screen.dart';
 ///
 /// In Part 2 a valid submit gives feedback and navigates to the payment screen;
 /// Part 3 saves the booking to Firestore (inside the try/catch in [_submit]).
-class BookingFormScreen extends StatefulWidget {
+class BookingFormScreen extends ConsumerStatefulWidget {
   final Tutor tutor;
 
   const BookingFormScreen({super.key, required this.tutor});
 
   @override
-  State<BookingFormScreen> createState() => _BookingFormScreenState();
+  ConsumerState<BookingFormScreen> createState() => _BookingFormScreenState();
 }
 
-class _BookingFormScreenState extends State<BookingFormScreen> {
+class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // Values captured via onSaved when form.save() runs.
@@ -72,14 +75,11 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
     }
   }
 
-  void _submit() {
-    // 1. Run the inline validators (subject dropdown + location field),
-    //    exactly like the class lab's expense form.
+  Future<void> _submit() async {
+    // 1. Inline validators (subject dropdown + location field).
     final isValid = _formKey.currentState!.validate();
 
-    // 2. The date/time pickers are not FormFields, so they are checked
-    //    separately with SnackBar feedback, the same way the lab handles
-    //    its date picker outside the Form.
+    // 2. Date/time pickers aren't FormFields, so check them separately.
     final missing = <String>[];
     if (_date == null) missing.add('date');
     if (_startTime == null) missing.add('start time');
@@ -97,11 +97,43 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
     // 3. Capture the text-field values (fires every onSaved).
     _formKey.currentState!.save();
 
-    debugPrint('Subject: $_subject  Date: $_date');
-    debugPrint('Start: $_startTime  End: $_endTime');
-    debugPrint('Location: $_location  Notes: $_notes');
+    // 4. Build the booking and insert it into Firestore.
+    final firebaseService = ref.read(firebaseServiceProvider);
+    final booking = Booking(
+      bookingId: '', // ignored; Firestore auto-generates the document ID
+      studentId: firebaseService.getCurrentUser()!.uid,
+      tutorId: widget.tutor.tutorId,
+      tutorName: widget.tutor.name,
+      tutorPhotoUrl: widget.tutor.photoUrl,
+      subject: _subject!,
+      sessionDate: _date!,
+      timeFrom: _startTime!,
+      timeTo: _endTime!,
+      location: _location!,
+      amount: widget.tutor.hourlyRate * 2,
+      status: BookingStatus.pending,
+      notes: _notes,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now()
+    );
 
-    // 4. Dismiss the keyboard and confirm success to the user.
+    try {
+      await firebaseService.addBooking(booking);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Could not save booking. Please try again.'),
+          ),
+        );
+      return;
+    }
+
+    if (!mounted) return;
+
+    // 5. Dismiss the keyboard and confirm success.
     FocusScope.of(context).unfocus();
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -111,17 +143,13 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
         ),
       );
 
-    // 5. Continue to payment.
-    //    Part 3: save the booking to Firestore here first, wrapped in a
-    //    try/catch with a success / error SnackBar.
+    // 6. Continue to payment.
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => PaymentScreen(
           tutorName: widget.tutor.name,
           subject: _subject ?? '',
-          // Fixed 2 hour estimate for now. Doesn't yet reflect the actual
-          // gap between the picked start and end time.
           amount: widget.tutor.hourlyRate * 2,
         ),
       ),

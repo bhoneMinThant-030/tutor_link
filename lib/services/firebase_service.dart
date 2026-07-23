@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:tutor_link/models/booking.dart';
 
 /// Wraps the Firebase Authentication SDK so the UI never talks to Firebase
 /// directly. Screens call these methods through [firebaseServiceProvider].
@@ -132,5 +134,29 @@ class FirebaseService {
       idToken: googleAuth.idToken,
     );
     return FirebaseAuth.instance.signInWithCredential(credential);
+  }
+
+  /// Saves the user's profile (name, course, year) to Firestore, keyed by
+  /// their UID so it links to the Authentication record. Called right after
+  /// register(); powers the Part 3 recommendation engine.
+  Future<void> addUserInfo(
+    String uid,
+    String name,
+    String course,
+    int yearOfStudy,
+  ) {
+    return FirebaseFirestore.instance.collection('users').doc(uid).set({
+      'name': name,
+      'course': course,
+      'yearOfStudy': yearOfStudy,
+    });
+  }
+
+  /// Creates a new booking document in the `bookings` collection. Firestore
+  /// auto-generates the document ID; [Booking.toMap] handles serialisation.
+  Future<void> addBooking(Booking booking) {
+    return FirebaseFirestore.instance
+        .collection('bookings')
+        .add(booking.toMap());
   }
 }

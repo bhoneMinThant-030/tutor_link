@@ -216,7 +216,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             tempDays.clear();
                             tempMaxPrice = _priceCap;
                             tempMinRating = 0;
-                            
                           }),
                           child: const Text('Clear'),
                         ),
@@ -255,90 +254,107 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final tutors = ref.watch(tutorsProvider);
-    final filtered = tutors.where(_matches).toList();
+    final tutorsAsync = ref.watch(tutorsProvider);
 
     // Greet the signed-in user by their first name (from Firebase).
     final user = ref.watch(authStateProvider).asData?.value;
     final greetingName = user?.displayName?.split(' ').first ?? 'there';
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Text(
-          'Hello, $greetingName.',
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Ready to get your tutoring session?',
-          style: TextStyle(color: Colors.grey[600]),
-        ),
-        const SizedBox(height: 16),
-
-        // Search box + filter button.
-        Row(
+    // Tutors stream from Firestore: show a spinner while loading, an error
+    // message if it fails, otherwise the list.
+    return tutorsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error loading tutors: $e')),
+      data: (tutors) {
+        final filtered = tutors.where(_matches).toList();
+        return ListView(
+          padding: const EdgeInsets.all(16),
           children: [
-            Expanded(
-              child: TextField(
-                key: ValueKey(_searchFieldGen),
-                onChanged: (v) => setState(() => _query = v),
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.search),
-                  hintText: 'Search by name or subject',
-                ),
-              ),
+            Text(
+              'Hello, $greetingName.',
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(width: 8),
-            IconButton.filledTonal(
-              onPressed: () => _openFilterSheet(tutors),
-              icon: const Icon(Icons.tune),
-              tooltip: 'Filters',
+            const SizedBox(height: 4),
+            Text(
+              'Ready to get your tutoring session?',
+              style: TextStyle(color: Colors.grey[600]),
             ),
-          ],
-        ),
-        const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-        // Either the filtered results, or the Recommended + All sections.
-        if (_isFiltering) ...[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Results (${filtered.length})',
-                style: const TextStyle(
+            // Search box + filter button.
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: ValueKey(_searchFieldGen),
+                    onChanged: (v) => setState(() => _query = v),
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.search),
+                      hintText: 'Search by name or subject',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton.filledTonal(
+                  onPressed: () => _openFilterSheet(tutors),
+                  icon: const Icon(Icons.tune),
+                  tooltip: 'Filters',
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Either the filtered results, or the Recommended + All sections.
+            if (_isFiltering) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Results (${filtered.length})',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: _clearFilters,
+                    child: const Text('Clear'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              if (filtered.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: Center(child: Text('No tutors match your search.')),
+                )
+              else
+                ...filtered.map(_card),
+            ] else ...[
+              const Text(
+                'RECOMMENDED FOR YOU',
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.5,
                 ),
               ),
-              TextButton(onPressed: _clearFilters, child: const Text('Clear')),
+              const SizedBox(height: 8),
+              // Part 3: replace `.take(3)` with the content-based scored top 3.
+              ...tutors.take(3).map(_card),
+              const SizedBox(height: 16),
+              const Text(
+                'ALL TUTORS',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...tutors.skip(3).map(_card),
             ],
-          ),
-          const SizedBox(height: 4),
-          if (filtered.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 40),
-              child: Center(child: Text('No tutors match your search.')),
-            )
-          else
-            ...filtered.map(_card),
-        ] else ...[
-          const Text(
-            'RECOMMENDED FOR YOU',
-            style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5),
-          ),
-          const SizedBox(height: 8),
-          // Part 3: replace `.take(3)` with the content-based scored top 3.
-          ...tutors.take(3).map(_card),
-          const SizedBox(height: 16),
-          const Text(
-            'ALL TUTORS',
-            style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5),
-          ),
-          const SizedBox(height: 8),
-          ...tutors.skip(3).map(_card),
-        ],
-      ],
+          ],
+        );
+      },
     );
   }
 }

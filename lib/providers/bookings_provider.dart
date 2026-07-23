@@ -1,14 +1,26 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/dummy_data.dart';
 import '../models/booking.dart';
+import 'firebase_provider.dart';
 
-/// Exposes the student's bookings to the UI.
-///
-/// Bookings are this app's ONE CRUD entity (tutors are read-only dummy data).
-/// Part 2: returns the in-memory [kDummyBookings] list so the My Bookings
-/// screen renders without a backend.
-/// Part 3: this becomes a Firestore StreamProvider (living alongside the auth
-/// providers in firebase_provider.dart) filtered by the signed-in user. The
-/// UI reading it won't need to change.
-final bookingsProvider = Provider<List<Booking>>((ref) => kDummyBookings);
+/// Streams the signed-in student's bookings from Firestore, newest activity
+/// reflected live. Filtered by studentId so each user only sees their own.
+final bookingsProvider = StreamProvider<List<Booking>>((ref) {
+  final authState = ref.watch(authStateProvider);
+  return authState.when(
+    data: (user) {
+      if (user == null) return Stream.value([]);
+      return FirebaseFirestore.instance
+          .collection('bookings')
+          .where('studentId', isEqualTo: user.uid)
+          .snapshots()
+          .map(
+            (snapshot) =>
+                snapshot.docs.map((doc) => Booking.fromFirestore(doc)).toList(),
+          );
+    },
+    loading: () => Stream.value([]),
+    error: (e, _) => Stream.value([]),
+  );
+});
